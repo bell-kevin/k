@@ -448,6 +448,96 @@ def build_quote_pool(count: int = 6) -> list[dict]:
 # assembly
 # --------------------------------------------------------------------------
 
+# --------------------------------------------------------------------------
+# rendering -- today's readings are baked into the page so it is complete
+# before any script runs
+# --------------------------------------------------------------------------
+
+TEMPLATE = Path(__file__).resolve().parent / "template.html"
+INDEX = ROOT / "index.html"
+
+WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday",
+            "Saturday", "Sunday"]
+MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July",
+               "August", "September", "October", "November", "December"]
+
+
+def esc(value: str) -> str:
+    return html.escape(value or "", quote=True)
+
+
+def human_date(date: dt.date) -> str:
+    return (f"{WEEKDAYS[date.weekday()]}, {MONTH_NAMES[date.month - 1]} "
+            f"{date.day}, {date.year}")
+
+
+def today_in(timezone: str) -> dt.date:
+    """Today's date where the site's readers are, not in UTC."""
+    try:
+        from zoneinfo import ZoneInfo
+        return dt.datetime.now(ZoneInfo(timezone)).date()
+    except Exception as err:  # missing tzdata on a bare system
+        print(f"  ! timezone {timezone!r} unavailable ({err}); using UTC",
+              file=sys.stderr)
+        return dt.datetime.now(dt.timezone.utc).date()
+
+
+def render_cards(entry: dict) -> str:
+    """Build the three cards as static markup."""
+    bom, quote, cfm = entry.get("bom"), entry.get("quote"), entry.get("cfm")
+
+    # The Come, Follow Me card is emitted even when the published manual does
+    # not cover this date, so that the script can fill it in later for a
+    # reader whose local date does fall inside the manual.
+    cfm_hidden = "" if cfm else " hidden"
+    cfm = cfm or {}
+
+    return f"""
+  <section class="card" id="card-bom">
+    <h2 class="card__label">Book of Mormon <span>Verse of the Day</span></h2>
+    <blockquote class="scripture" id="bom-text">{esc(bom.get('text', ''))}</blockquote>
+    <p class="ref"><a id="bom-link" href="{esc(bom.get('url', '#'))}" target="_blank" rel="noopener noreferrer"><cite id="bom-ref">{esc(bom.get('reference', ''))}</cite></a></p>
+  </section>
+
+  <section class="card" id="card-cfm"{cfm_hidden}>
+    <h2 class="card__label">Come, Follow Me <span>Verse of the Day</span></h2>
+    <p class="week">This week: <a id="cfm-week-link" href="{esc(cfm.get('weekUrl', '#'))}" target="_blank" rel="noopener noreferrer"><span id="cfm-week">{esc(cfm.get('week', ''))}</span></a></p>
+    <blockquote class="scripture" id="cfm-text">{esc(cfm.get('text', ''))}</blockquote>
+    <p class="ref"><a id="cfm-link" href="{esc(cfm.get('url', '#'))}" target="_blank" rel="noopener noreferrer"><cite id="cfm-ref">{esc(cfm.get('reference', ''))}</cite></a></p>
+  </section>
+
+  <section class="card" id="card-quote">
+    <h2 class="card__label">General Conference <span>Quote of the Day</span></h2>
+    <blockquote class="quote" id="quote-text">{esc(quote.get('text', ''))}</blockquote>
+    <p class="ref">
+      <span id="quote-speaker" class="speaker">{esc(quote.get('speaker', ''))}</span><a id="quote-link" href="{esc(quote.get('url', '#'))}" target="_blank" rel="noopener noreferrer"><cite id="quote-talk">{esc(quote.get('talk', ''))}</cite></a><span id="quote-session" class="session">{esc(quote.get('session', ''))}</span>
+    </p>
+  </section>
+"""
+
+
+def render_site(payload: dict, timezone: str, date: dt.date | None = None) -> dt.date:
+    """Write index.html with the current day's readings already in place."""
+    date = date or today_in(timezone)
+    entry = payload["days"].get(date.isoformat())
+    if not entry:
+        # Fall back to the nearest built day so the page is never blank.
+        keys = sorted(payload["days"])
+        nearest = min(keys, key=lambda k: abs(dt.date.fromisoformat(k).toordinal()
+                                              - date.toordinal()))
+        print(f"  ! no entry for {date}; baking {nearest} instead", file=sys.stderr)
+        entry = payload["days"][nearest]
+
+    page = TEMPLATE.read_text(encoding="utf-8")
+    for token, value in (("{{DATE_ISO}}", date.isoformat()),
+                         ("{{DATE_HUMAN}}", human_date(date)),
+                         ("{{CARDS}}", render_cards(entry)),
+                         ("{{GENERATED}}", payload["generated"][:10])):
+        page = page.replace(token, value)
+    INDEX.write_text(page, encoding="utf-8", newline="\n")
+    return date
+
+
 def spread(pool: list[dict], seed: int, key) -> list[dict]:
     """Shuffle a pool so consecutive days are not from the same place."""
     shuffled = pool[:]
@@ -471,8 +561,32 @@ def main() -> int:
     ap.add_argument("--days", type=int, default=730, help="how many days to build")
     ap.add_argument("--manual", default="come-follow-me-for-home-and-church-old-testament-2026")
     ap.add_argument("--manual-year", type=int, default=2026)
-    ap.add_argument("--conferences", type=int, default=6)
+    ap.add_argument("--conferences", type=int, default=1,
+                    help="how many recent conferences to quote from "
+                         "(1 = the most recent one only)")
+    ap.add_argument("--timezone", default="America/Denver",
+                    help="whose 'today' the page is built for")
+    ap.add_argument("--render-only", action="store_true",
+                    help="re-render index.html from the existing calendar "
+                         "without fetching anything")
+    ap.add_argument("--date", default=None,
+                    help="render for this date instead of today (YYYY-MM-DD)")
     args = ap.parse_args()
+
+    as_of = dt.date.fromisoformat(args.date) if args.date else None
+
+    # The daily job only needs to move the page on to the next day, which the
+    # prebuilt calendar already answers -- no need to refetch anything.
+    if args.render_only:
+        if not OUT.exists():
+            print(f"error: {OUT} does not exist; run a full build first",
+                  file=sys.stderr)
+            return 1
+        with open(OUT, encoding="utf-8") as fh:
+            payload = json.load(fh)
+        date = render_site(payload, args.timezone, as_of)
+        print(f"Rendered index.html for {date} ({args.timezone})")
+        return 0
 
     start = (dt.date.fromisoformat(args.start) if args.start
              else dt.date.today() - dt.timedelta(days=30))
@@ -522,6 +636,9 @@ def main() -> int:
     print(f"  {len(days)} days ({payload['first']} .. {payload['last']})")
     print(f"  {covered} days with a Come, Follow Me verse")
     print(f"  {OUT.stat().st_size / 1024:.0f} KB")
+
+    date = render_site(payload, args.timezone, as_of)
+    print(f"Wrote index.html for {date} ({args.timezone})")
     return 0
 
 

@@ -33,40 +33,72 @@ verse is drawn from, so it stays in step with what wards are studying.
 | --- | --- |
 | Book of Mormon verse | All 239 Book of Mormon chapters |
 | Come, Follow Me verse | The current year's weekly manual, using the verses each week actually cites |
-| Conference quote | The last six General Conferences |
+| Conference quote | The most recent General Conference only |
 
 It filters each pool for passages that read well on their own — dropping
 genealogy, travelogue, mid-story narration and endnote bibliographies — then
 writes a prebuilt calendar of daily picks to `data/daily.json`.
 
-The website is static HTML and CSS plus about 100 lines of JavaScript whose only
-job is to look up today's date in that file. **The page never contacts
-`churchofjesuschrist.org` at runtime.** Nothing is tracked, stored, or sent
-anywhere. If the Church's site changes shape, a page view is unaffected; only a
-rebuild would notice.
+**The page never contacts `churchofjesuschrist.org` at runtime.** Nothing is
+tracked, stored, or sent anywhere. If the Church's site changes shape, a page
+view is unaffected; only a rebuild would notice.
 
-A scheduled GitHub Action re-runs the builder monthly to extend the calendar and
-pick up newly published conferences and manuals.
+## It works with JavaScript switched off
+
+`index.html` is generated from `tools/template.html` with the day's readings
+**already written into the markup**, so the page is complete before any script
+runs. With scripts disabled you get the full page — all three cards, every link.
+
+The script is enhancement only, and does nothing at all unless the reader's own
+date has moved past the date the page was built for. In that one case it swaps
+in the right day from `data/daily.json`. If that fetch fails, the baked-in
+readings stay put and the date shown next to them is the date they belong to, so
+the page never claims a reading is today's when it isn't.
+
+Two scheduled GitHub Actions keep it current:
+
+- **daily**, just after midnight in the build timezone — re-renders the page for
+  the new day from the calendar already in the repository, fetching nothing;
+- **monthly** — refetches to extend the calendar and pick up a newly published
+  conference or manual.
+
+Because the daily job is what moves a no-JavaScript page on to the next day, the
+site depends on it running. The calendar is built two years ahead, so a missed
+run costs you the right day, never the whole site.
 
 ## Running it yourself
 
 ```sh
-python tools/build_daily.py            # rebuild data/daily.json (~350 requests, cached)
-python -m http.server 8000             # then open http://localhost:8000
+python tools/build_daily.py              # refetch, rebuild the calendar, render index.html
+python tools/build_daily.py --render-only  # just re-render today's page, no network
+python -m http.server 8000               # then open http://localhost:8000
 ```
 
-Opening `index.html` straight off disk will not work: browsers block the
-`fetch` of `data/daily.json` from `file://` URLs. Use the local server above.
+`index.html` is generated — **edit `tools/template.html`, not `index.html`.**
+
+Opening the file straight off disk works for reading, since the readings are in
+the markup; only the script's `fetch` is blocked on `file://` URLs, and it has
+nothing to do when the page is already current.
 
 Useful flags:
 
 ```sh
-python tools/build_daily.py --days 1095            # build three years ahead
-python tools/build_daily.py --start 2027-01-01     # start from a given date
+python tools/build_daily.py --days 1095              # build three years ahead
+python tools/build_daily.py --start 2027-01-01       # start the calendar at a date
+python tools/build_daily.py --conferences 4          # quote from the last four conferences
+python tools/build_daily.py --timezone Europe/London # whose "today" the page is built for
+python tools/build_daily.py --render-only --date 2026-12-25   # render a specific day
 python tools/build_daily.py \
     --manual come-follow-me-for-home-and-church-new-testament-2027 \
-    --manual-year 2027                             # next year's manual
+    --manual-year 2027                               # next year's manual
 ```
+
+Quoting only the most recent conference gives a pool of roughly 250 passages, so
+over a two-year calendar a quote comes round again about every eight months.
+Raise `--conferences` if you would rather trade freshness for variety.
+
+`--timezone` and the daily cron in `.github/workflows/deploy.yml` need to agree;
+change them together.
 
 Responses are cached under `.cache/`; delete it to force a clean fetch.
 
