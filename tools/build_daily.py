@@ -39,6 +39,10 @@ OUT = ROOT / "data" / "daily.json"
 API = "https://www.churchofjesuschrist.org/study/api/v3/language-pages/type/content"
 UA = "Mozilla/5.0 (compatible; no-login-daily-verse/1.0; static site builder)"
 
+# Daily picks are indexed from this fixed date, so a given day always resolves
+# to the same verse no matter when the calendar was last rebuilt.
+EPOCH = dt.date(2026, 1, 1)
+
 # The Book of Mormon's book/chapter structure is fixed, so it is stated here
 # rather than scraped -- one less thing that can break upstream.
 BOM_BOOKS = [
@@ -354,17 +358,65 @@ def build_cfm_weeks(manual: str, year: int) -> list[dict]:
 # source 3 -- General Conference quotes
 # --------------------------------------------------------------------------
 
-def recent_conferences(count: int = 6) -> list[tuple[int, int]]:
-    """The last `count` conferences (April and October) already held."""
-    today = dt.date.today()
-    sessions: list[tuple[int, int]] = []
-    year, month = today.year, 10 if today.month >= 10 else 4
-    if today.month < 4:
-        year, month = year - 1, 10
-    while len(sessions) < count:
-        sessions.append((year, month))
+# A full conference is a little under forty talks. Requiring most of them
+# stops a half-posted conference from being chosen while it is still going up.
+CONFERENCE_MIN_TALKS = 20
+
+
+def conference_candidates(today: dt.date, depth: int = 8):
+    """Conference sessions, newest first.
+
+    Conference is held early in April and early in October, so the session for
+    a month that has begun is the newest one that could exist.
+    """
+    if today.month >= 10:
+        year, month = today.year, 10
+    elif today.month >= 4:
+        year, month = today.year, 4
+    else:
+        year, month = today.year - 1, 10
+    for _ in range(depth):
+        yield year, month
         year, month = (year, 4) if month == 10 else (year - 1, 10)
-    return sessions
+
+
+def talk_uris_for(year: int, month: int) -> list[str]:
+    index = fetch(f"/general-conference/{year}/{month:02d}")
+    if not index:
+        return []
+    return sorted({
+        "/" + u for u in re.findall(
+            rf"/study/(general-conference/{year}/{month:02d}/[a-z0-9-]+)\?lang=eng",
+            index["content"]["body"])
+    })
+
+
+def resolve_conferences(count: int, today: dt.date | None = None
+                        ) -> list[tuple[int, int, list[str]]]:
+    """The `count` most recent conferences whose talks are actually published.
+
+    The date says which conference is newest; only the site can say whether its
+    text is up yet. Conference is held on a weekend and the talks appear over
+    the following days, so between those two moments the newest session either
+    404s or is half-posted. Probing rather than assuming means the changeover
+    happens on its own, a few days after each conference, with no lag to keep
+    in step with the calendar.
+    """
+    today = today or dt.date.today()
+    chosen: list[tuple[int, int, list[str]]] = []
+    for year, month in conference_candidates(today):
+        if len(chosen) >= count:
+            break
+        uris = talk_uris_for(year, month)
+        if not uris:
+            print(f"  - {year}-{month:02d} not published yet; falling back")
+            continue
+        if len(uris) < CONFERENCE_MIN_TALKS:
+            print(f"  - {year}-{month:02d} only {len(uris)} talks posted so far; "
+                  f"falling back")
+            continue
+        chosen.append((year, month, uris))
+    return chosen
 
 
 def is_quotable_paragraph(text: str) -> bool:
@@ -394,17 +446,17 @@ def is_quotable_paragraph(text: str) -> bool:
     return not text.startswith(("“", '"'))
 
 
-def build_quote_pool(count: int = 6) -> list[dict]:
+def build_quote_pool(count: int = 1) -> list[dict]:
+    sessions = resolve_conferences(count)
+    if not sessions:
+        return []
+    newest = sessions[0]
+    print(f"General Conference: quoting from "
+          f"{'April' if newest[1] == 4 else 'October'} {newest[0]}"
+          f"{f' and {len(sessions) - 1} earlier' if len(sessions) > 1 else ''}")
+
     pool: list[dict] = []
-    for year, month in recent_conferences(count):
-        index = fetch(f"/general-conference/{year}/{month:02d}")
-        if not index:
-            continue
-        talk_uris = sorted({
-            "/" + u for u in re.findall(
-                rf"/study/(general-conference/{year}/{month:02d}/[a-z0-9-]+)\?lang=eng",
-                index["content"]["body"])
-        })
+    for year, month, talk_uris in sessions:
         print(f"General Conference {year}-{month:02d}: fetching {len(talk_uris)} talks ...")
         talks = fetch_many(talk_uris)
 
@@ -605,9 +657,13 @@ def main() -> int:
     days: dict[str, dict] = {}
     for offset in range(args.days):
         date = start + dt.timedelta(days=offset)
+        # Index from a fixed epoch rather than from the start of this build, so
+        # a date always resolves to the same pick and a rebuild part-way
+        # through the day does not change the verse under the reader.
+        index = (date - EPOCH).days
         entry = {
-            "bom": bom[offset % len(bom)],
-            "quote": quotes[offset % len(quotes)],
+            "bom": bom[index % len(bom)],
+            "quote": quotes[index % len(quotes)],
         }
         for week in weeks:
             if week["start"] <= date.isoformat() <= week["end"]:

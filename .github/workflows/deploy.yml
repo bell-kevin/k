@@ -8,9 +8,11 @@ on:
     # America/Denver, the timezone the page is built for; change both together.
     # This job re-renders from the prebuilt calendar and fetches nothing.
     - cron: "10 8 * * *"
-    # Once a month, refetch to extend the calendar and pick up a newly
-    # published conference or manual.
-    - cron: "0 9 1 * *"
+    # Twice a week, refetch to extend the calendar and pick up new content.
+    # General Conference is held on a weekend and its talks are posted over the
+    # following days, so checking Mondays and Thursdays picks up a new
+    # conference within a few days of the text going up.
+    - cron: "0 9 * * 1,4"
   workflow_dispatch:
     inputs:
       refetch:
@@ -37,15 +39,15 @@ jobs:
         with:
           python-version: "3.12"
 
-      # A full refetch is ~350 requests, so it runs only on the monthly cron
-      # or when asked for. Every other run just re-renders today's page from
-      # the calendar already in the repository.
+      # A full refetch is ~350 requests, so it runs only on the twice-weekly
+      # cron or when asked for. Every other run just re-renders today's page
+      # from the calendar already in the repository.
       - name: Refetch readings calendar
-        if: github.event.schedule == '0 9 1 * *' || inputs.refetch
+        if: github.event.schedule == '0 9 * * 1,4' || inputs.refetch
         run: python tools/build_daily.py --days 730
 
       - name: Render today's page
-        if: github.event.schedule != '0 9 1 * *' && !inputs.refetch
+        if: github.event.schedule != '0 9 * * 1,4' && !inputs.refetch
         run: python tools/build_daily.py --render-only
 
       - name: Commit refreshed files

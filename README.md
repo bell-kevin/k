@@ -37,11 +37,34 @@ verse is drawn from, so it stays in step with what wards are studying.
 | --- | --- |
 | Book of Mormon verse | All 239 Book of Mormon chapters |
 | Come, Follow Me verse | The current year's weekly manual, using the verses each week actually cites |
-| Conference quote | The most recent General Conference only |
+| Conference quote | The most recent General Conference whose talks are published |
 
 It filters each pool for passages that read well on their own — dropping
 genealogy, travelogue, mid-story narration and endnote bibliographies — then
 writes a prebuilt calendar of daily picks to `data/daily.json`.
+
+Each day's pick is indexed from a fixed epoch rather than from whenever the
+calendar was last built, so a given date always resolves to the same verse and a
+rebuild part-way through the day does not change it under the reader.
+
+### Following General Conference automatically
+
+Conference is held early in April and early in October, and the talks are posted
+over the following days. Two different things therefore decide which conference
+to quote, and only one of them is a date:
+
+- today's date says which session is the newest that *could* exist;
+- only the site can say whether its text is up **yet**.
+
+So the builder walks candidate sessions newest-first and takes the first one
+that actually returns a full set of talks — treating a session as unavailable
+while it 404s or is still going up, rather than assuming a fixed publication
+lag. Between conference weekend and the talks appearing, it simply keeps quoting
+the previous conference; the changeover then happens on its own within a few
+days, with no date to keep in step by hand.
+
+The refetch runs Mondays and Thursdays, which bounds how long after publication
+a new conference takes to show up.
 
 **The page never contacts `churchofjesuschrist.org` at runtime.** Nothing is
 tracked, stored, or sent anywhere. If the Church's site changes shape, a page
@@ -63,8 +86,8 @@ Two scheduled GitHub Actions keep it current:
 
 - **daily**, just after midnight in the build timezone — re-renders the page for
   the new day from the calendar already in the repository, fetching nothing;
-- **monthly** — refetches to extend the calendar and pick up a newly published
-  conference or manual.
+- **Mondays and Thursdays** — refetches to extend the calendar and pick up a
+  newly published conference or manual.
 
 Because the daily job is what moves a no-JavaScript page on to the next day, the
 site depends on it running. The calendar is built two years ahead, so a missed
