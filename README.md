@@ -1,5 +1,7 @@
 # Verse &amp; Quote of the Day
 
+https://bell-kevin.github.io/k/
+
 A plain website that shows, every day:
 
 - a **Book of Mormon verse of the day**,
@@ -86,3 +88,5 @@ work only, and grants you no rights in the Church's content.
 This site is not affiliated with, endorsed by, or produced by The Church of
 Jesus Christ of Latter-day Saints. If you want to reuse Church content beyond
 personal study, see <https://permissions.churchofjesuschrist.org/>.
+
+https://bell-kevin.github.io/k/
