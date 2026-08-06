@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verse &amp; Quote of the Day</title>
+<meta name="description" content="A daily Book of Mormon verse, a Come, Follow Me verse, and a General Conference quote. No app, no account, no sign-in.">
+<meta name="color-scheme" content="light dark">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>">
+</head>
+<body>
+
+<header class="masthead">
+  <p class="eyebrow">No app. No account. No sign-in.</p>
+  <h1>Verse &amp; Quote of the Day</h1>
+  <p class="today"><time id="today-date" datetime=""></time></p>
+</header>
+
+<main id="cards">
+
+  <noscript>
+    <section class="card card--notice">
+      <h2>JavaScript is switched off</h2>
+      <p>This page keeps a prebuilt calendar of daily readings in a single data
+         file and needs a few lines of JavaScript to pick out today's entry.
+         With scripts disabled you can still read the raw calendar at
+         <a href="data/daily.json">data/daily.json</a>.</p>
+    </section>
+  </noscript>
+
+  <section class="card" id="card-bom" hidden>
+    <h2 class="card__label">Book of Mormon <span>Verse of the Day</span></h2>
+    <blockquote class="scripture" id="bom-text"></blockquote>
+    <p class="ref"><a id="bom-link" href="#" rel="noopener"><cite id="bom-ref"></cite></a></p>
+  </section>
+
+  <section class="card" id="card-cfm" hidden>
+    <h2 class="card__label">Come, Follow Me <span>Verse of the Day</span></h2>
+    <p class="week">This week: <a id="cfm-week-link" href="#" rel="noopener"><span id="cfm-week"></span></a></p>
+    <blockquote class="scripture" id="cfm-text"></blockquote>
+    <p class="ref"><a id="cfm-link" href="#" rel="noopener"><cite id="cfm-ref"></cite></a></p>
+  </section>
+
+  <section class="card" id="card-quote" hidden>
+    <h2 class="card__label">General Conference <span>Quote of the Day</span></h2>
+    <blockquote class="quote" id="quote-text"></blockquote>
+    <p class="ref">
+      <span id="quote-speaker" class="speaker"></span><a id="quote-link" href="#" rel="noopener"><cite id="quote-talk"></cite></a><span id="quote-session" class="session"></span>
+    </p>
+  </section>
+
+  <section class="card card--notice" id="card-error" hidden>
+    <h2>Couldn't load today's readings</h2>
+    <p id="error-detail"></p>
+  </section>
+
+</main>
+
+<footer class="colophon">
+  <p>Scripture and General Conference text is published by
+     The Church of Jesus Christ of Latter-day Saints and is reproduced here for
+     personal, non-commercial study. Every quotation links back to the official
+     source on
+     <a href="https://www.churchofjesuschrist.org/study" rel="noopener">churchofjesuschrist.org</a>.
+     This site is not affiliated with or endorsed by the Church.</p>
+  <p>The site's own code is free software under the
+     <a href="LICENSE" rel="noopener">GNU AGPL v3</a>.
+     <span id="generated" class="generated"></span></p>
+</footer>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

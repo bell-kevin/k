@@ -1,0 +1,218 @@
+/* Verse & Quote of the Day
+   Copyright (C) 2026  Kevin Bell
+   Licensed under the GNU Affero General Public License v3 or later. */
+
+:root {
+  --paper:      #faf7f2;
+  --card:       #ffffff;
+  --ink:        #1e1b16;
+  --ink-soft:   #5c5347;
+  --ink-faint:  #8a8073;
+  --rule:       #e6dfd3;
+  --accent:     #7a5c2e;
+  --accent-ink: #6b4f26;
+  --shadow:     0 1px 2px rgba(40, 30, 15, .05), 0 6px 20px rgba(40, 30, 15, .05);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper:      #16171a;
+    --card:       #1d1f23;
+    --ink:        #ece8e1;
+    --ink-soft:   #b3ada3;
+    --ink-faint:  #857f76;
+    --rule:       #2e3238;
+    --accent:     #d8b878;
+    --accent-ink: #e6c88a;
+    --shadow:     0 1px 2px rgba(0, 0, 0, .3), 0 6px 20px rgba(0, 0, 0, .28);
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: clamp(1.5rem, 5vw, 4rem) 1.25rem clamp(3rem, 6vw, 5rem);
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif;
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---------- masthead ---------- */
+
+.masthead {
+  max-width: 46rem;
+  margin: 0 auto clamp(2rem, 5vw, 3.25rem);
+  text-align: center;
+}
+
+.eyebrow {
+  margin: 0 0 .75rem;
+  font-size: .7rem;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+}
+
+.masthead h1 {
+  margin: 0;
+  font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+  font-size: clamp(1.75rem, 5.5vw, 2.6rem);
+  font-weight: 600;
+  letter-spacing: -.01em;
+  line-height: 1.15;
+}
+
+.today {
+  margin: .85rem 0 0;
+  color: var(--ink-soft);
+  font-size: .95rem;
+}
+
+/* ---------- cards ---------- */
+
+#cards {
+  max-width: 46rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.25rem, 3vw, 1.75rem);
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  padding: clamp(1.4rem, 4vw, 2.25rem);
+  box-shadow: var(--shadow);
+}
+
+.card__label {
+  margin: 0 0 1.15rem;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+}
+
+.card__label span {
+  display: block;
+  margin-top: .25rem;
+  font-weight: 500;
+  color: var(--ink-faint);
+}
+
+.week {
+  margin: -.4rem 0 1.15rem;
+  font-size: .9rem;
+  color: var(--ink-soft);
+}
+
+/* ---------- the readings ---------- */
+
+blockquote {
+  margin: 0;
+  font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+  hyphens: auto;
+}
+
+.scripture {
+  font-size: clamp(1.1rem, 2.6vw, 1.3rem);
+  line-height: 1.62;
+}
+
+.quote {
+  font-size: clamp(1.05rem, 2.4vw, 1.22rem);
+  line-height: 1.6;
+  font-style: italic;
+}
+
+/* A hanging open-quote, kept out of the text flow so it never shifts the
+   first line's left edge. */
+.quote::before {
+  content: "\201C";
+  position: absolute;
+  margin-left: -.55em;
+  color: var(--accent);
+  opacity: .45;
+  font-size: 1.9em;
+  line-height: 1;
+}
+
+.ref {
+  margin: 1.15rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+  font-size: .9rem;
+  color: var(--ink-soft);
+}
+
+.ref cite { font-style: normal; }
+
+/* Non-breaking spaces around the separators: ordinary spaces at an element
+   boundary get collapsed away, which closes the gap up. */
+.speaker { font-weight: 600; color: var(--ink); }
+.speaker::after { content: "\00A0\00B7\00A0"; font-weight: 400; color: var(--ink-faint); }
+.session::before { content: "\00A0\00B7\00A0"; color: var(--ink-faint); }
+
+a {
+  color: var(--accent-ink);
+  text-underline-offset: .18em;
+  text-decoration-thickness: 1px;
+}
+a:hover { text-decoration-thickness: 2px; }
+
+a:focus-visible, :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* ---------- notices ---------- */
+
+.card--notice { border-style: dashed; box-shadow: none; }
+
+.card--notice h2 {
+  margin: 0 0 .6rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.card--notice p { margin: 0; color: var(--ink-soft); font-size: .93rem; }
+
+/* ---------- colophon ---------- */
+
+.colophon {
+  max-width: 46rem;
+  margin: clamp(2.5rem, 6vw, 4rem) auto 0;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--rule);
+  color: var(--ink-faint);
+  font-size: .8rem;
+  line-height: 1.6;
+}
+
+.colophon p { margin: 0 0 .6rem; }
+.colophon a { color: var(--ink-soft); }
+.generated { white-space: nowrap; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .card { animation: rise .45s ease-out both; }
+  .card:nth-of-type(2) { animation-delay: .06s; }
+  .card:nth-of-type(3) { animation-delay: .12s; }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: none; }
+  }
+}
+
+@media print {
+  body { background: #fff; color: #000; padding: 0; }
+  .card { border: none; box-shadow: none; page-break-inside: avoid; }
+  .eyebrow, .colophon { display: none; }
+}

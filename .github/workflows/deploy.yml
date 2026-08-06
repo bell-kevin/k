@@ -1,0 +1,69 @@
+name: Build and deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # Extend the readings calendar and pick up newly published conferences and
+  # manuals. The site keeps working between runs -- the calendar is prebuilt.
+  schedule:
+    - cron: "0 9 1 * *"   # 09:00 UTC on the 1st of each month
+  workflow_dispatch:
+    inputs:
+      rebuild:
+        description: "Re-run the builder before deploying"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Only rebuild on a schedule or an explicit request; an ordinary push
+      # deploys the calendar already committed to the repository.
+      - name: Rebuild readings calendar
+        if: github.event_name == 'schedule' || inputs.rebuild
+        run: python tools/build_daily.py --days 730
+
+      - name: Commit refreshed calendar
+        if: github.event_name == 'schedule' || inputs.rebuild
+        run: |
+          if git diff --quiet -- data/daily.json; then
+            echo "Calendar unchanged."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/daily.json
+          git commit -m "Refresh readings calendar"
+          git push
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,4 @@
+# Keep LF in the repository regardless of the checkout platform, so the
+# workflow's shell steps stay valid on the Linux runners.
+* text=auto eol=lf
+*.png binary
