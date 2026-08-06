@@ -35,6 +35,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 CACHE = ROOT / ".cache"
 OUT = ROOT / "data" / "daily.json"
+SPEAKERS = ROOT / "assets" / "speakers"
 
 API = "https://www.churchofjesuschrist.org/study/api/v3/language-pages/type/content"
 UA = "Mozilla/5.0 (compatible; no-login-daily-verse/1.0; static site builder)"
@@ -407,6 +408,11 @@ def build_cfm_weeks(manual: str, year: int) -> list[dict]:
 # stops a half-posted conference from being chosen while it is still going up.
 CONFERENCE_MIN_TALKS = 20
 
+# Speaker photos are saved into the repository rather than hot-linked, so a
+# page view still contacts nobody but the host serving the site. The card shows
+# one at up to 240 CSS pixels wide, so 480 stays sharp on a 2x display.
+PORTRAIT_WIDTH = 480
+
 
 def conference_candidates(today: dt.date, depth: int = 8):
     """Conference sessions, newest first.
@@ -464,6 +470,83 @@ def resolve_conferences(count: int, today: dt.date | None = None
     return chosen
 
 
+def portrait_url(meta: dict, width: int = PORTRAIT_WIDTH) -> str | None:
+    """The talk's own photo of its speaker, asked for at the width we serve.
+
+    Every conference talk carries a photo of that speaker at the pulpit as its
+    share image -- the same picture the conference index uses as a thumbnail.
+    The URL is IIIF, so the size is ours to choose rather than whatever the
+    page happened to link.
+    """
+    match = re.match(r"(https://\S+?)/full/[^/]+/0/default$",
+                     meta.get("ogTagImageUrl") or "")
+    return f"{match.group(1)}/full/%21{width}%2C/0/default" if match else None
+
+
+def portrait_path(uri: str) -> Path:
+    """/general-conference/2026/04/53hall -> assets/speakers/2026-04-53hall.jpg"""
+    return SPEAKERS / ("-".join(uri.strip("/").split("/")[1:]) + ".jpg")
+
+
+def fetch_portrait(item: tuple[str, dict | None]) -> tuple[str, str]:
+    """Save one speaker photo, returning its path relative to the site root."""
+    uri, talk = item
+    url = portrait_url(talk["meta"]) if talk else None
+    if not url:
+        return uri, ""
+
+    dest = portrait_path(uri)
+    rel = dest.relative_to(ROOT).as_posix()
+    # A talk's photo never changes, so one already in the repository is done.
+    if dest.exists() and dest.stat().st_size:
+        return uri, rel
+
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": UA,
+                                                   "Accept": "image/jpeg,image/*"})
+        with urllib.request.urlopen(req, timeout=45) as resp:
+            if not resp.headers.get_content_type().startswith("image/"):
+                return uri, ""
+            data = resp.read()
+    except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as err:
+        print(f"  ! no photo for {uri}: {err}", file=sys.stderr)
+        return uri, ""
+
+    # Write beside the target first, so an interrupted build cannot leave a
+    # truncated JPEG that later runs would take for a finished download.
+    SPEAKERS.mkdir(parents=True, exist_ok=True)
+    part = dest.with_suffix(".part")
+    part.write_bytes(data)
+    part.replace(dest)
+    time.sleep(0.25)  # be a polite client
+    return uri, rel
+
+
+def fetch_portraits(talks: dict[str, dict | None], workers: int = 6) -> dict[str, str]:
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        return dict(pool.map(fetch_portrait, talks.items()))
+
+
+def prune_portraits(days: dict[str, dict]) -> int:
+    """Drop photos of speakers no longer in the calendar.
+
+    The pool moves on with each conference, so without this the repository
+    would keep every photo it had ever downloaded.
+    """
+    if not SPEAKERS.exists():
+        return 0
+    keep = {entry["quote"].get("image", "")
+            for entry in days.values() if entry.get("quote")}
+    removed = 0
+    # Everything, not just *.jpg, so a half-written .part left by an
+    # interrupted build is cleared out rather than committed with the rest.
+    for path in SPEAKERS.iterdir():
+        if path.is_file() and path.relative_to(ROOT).as_posix() not in keep:
+            path.unlink()
+            removed += 1
+    return removed
+
+
 def is_quotable_paragraph(text: str) -> bool:
     if not 110 <= len(text) <= 330:
         return False
@@ -505,6 +588,11 @@ def build_quote_pool(count: int = 1) -> list[dict]:
         print(f"General Conference {year}-{month:02d}: fetching {len(talk_uris)} talks ...")
         talks = fetch_many(talk_uris)
 
+        # Held aside so the photos can be fetched for the talks that actually
+        # contributed a quote -- a talk whose every paragraph was filtered out
+        # can never be shown, so its photo is not worth downloading.
+        found: list[tuple[str, dict]] = []
+
         for uri, talk in talks.items():
             if not talk:
                 continue
@@ -528,7 +616,7 @@ def build_quote_pool(count: int = 1) -> list[dict]:
             for pid, raw in paragraphs:
                 text = clean(raw)
                 if is_quotable_paragraph(text):
-                    pool.append({
+                    found.append((uri, {
                         "text": text,
                         "speaker": speaker,
                         "role": clean(role.group(1)) if role else "",
@@ -536,7 +624,16 @@ def build_quote_pool(count: int = 1) -> list[dict]:
                         "session": session,
                         "url": f"https://www.churchofjesuschrist.org/study{uri}"
                                f"?lang=eng&id={pid}#{pid}",
-                    })
+                    }))
+
+        quoted = {uri: talks[uri] for uri, _ in found}
+        print(f"General Conference {year}-{month:02d}: "
+              f"fetching {len(quoted)} speaker photos ...")
+        photos = fetch_portraits(quoted)
+        for uri, quote in found:
+            quote["image"] = photos.get(uri, "")
+            pool.append(quote)
+
     print(f"General Conference: {len(pool)} quotable paragraphs")
     return pool
 
@@ -589,6 +686,13 @@ def render_cards(entry: dict) -> str:
     cfm_hidden = "" if cfm else " hidden"
     cfm = cfm or {}
 
+    # Likewise the speaker's photo: the figure is always in the markup so the
+    # script has something to fill, but an <img> with no src at all -- rather
+    # than an empty one, which some browsers re-request the page for.
+    photo = quote.get("image", "")
+    photo_src = f' src="{esc(photo)}"' if photo else ""
+    photo_alt = esc(f"{quote.get('speaker', '')} speaking at general conference") if photo else ""
+
     return f"""
   <section class="card" id="card-bom">
     <h2 class="card__label">Book of Mormon <span>Verse of the Day</span></h2>
@@ -606,6 +710,9 @@ def render_cards(entry: dict) -> str:
   <section class="card" id="card-quote">
     <h2 class="card__label">General Conference <span>Quote of the Day</span></h2>
     <blockquote class="quote" id="quote-text">{esc(quote.get('text', ''))}</blockquote>
+    <figure class="portrait" id="quote-portrait"{'' if photo else ' hidden'}>
+      <img id="quote-photo"{photo_src} alt="{photo_alt}" width="{PORTRAIT_WIDTH}" height="{PORTRAIT_WIDTH * 9 // 16}" decoding="async">
+    </figure>
     <p class="ref">
       <span id="quote-speaker" class="speaker">{esc(quote.get('speaker', ''))}</span><a id="quote-link" href="{esc(quote.get('url', '#'))}" target="_blank" rel="noopener noreferrer"><cite id="quote-talk">{esc(quote.get('talk', ''))}</cite></a><span id="quote-session" class="session">{esc(quote.get('session', ''))}</span>
     </p>
@@ -738,6 +845,8 @@ def main() -> int:
                 break
         days[date.isoformat()] = entry
 
+    dropped = prune_portraits(days)
+
     OUT.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "generated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -758,6 +867,11 @@ def main() -> int:
           + (f" ({covered[0]} .. {covered[-1]})" if covered else ""))
     print(f"  manuals: {', '.join(m for m, _ in manuals) or 'none'}")
     print(f"  {OUT.stat().st_size / 1024:.0f} KB")
+
+    photos = sorted(SPEAKERS.glob("*.jpg")) if SPEAKERS.exists() else []
+    print(f"  {len(photos)} speaker photos "
+          f"({sum(p.stat().st_size for p in photos) / 1024:.0f} KB)"
+          + (f", {dropped} pruned" if dropped else ""))
 
     date = render_site(payload, args.timezone, as_of)
     print(f"Wrote index.html for {date} ({args.timezone})")

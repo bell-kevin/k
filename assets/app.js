@@ -47,6 +47,22 @@
     if (el) el.hidden = hidden;
   }
 
+  /* The speaker's photo lives in this repository, so this is a local swap --
+     still no request to anyone else. A talk without one hides the figure
+     rather than showing a broken image. */
+  function setPhoto(quote) {
+    var img = document.getElementById("quote-photo");
+    if (!img) return;
+    if (quote.image) {
+      img.src = quote.image;
+      img.alt = quote.speaker + " speaking at general conference";
+    } else {
+      img.removeAttribute("src");
+      img.alt = "";
+    }
+    setHidden("quote-portrait", !quote.image);
+  }
+
   /* If the reader has run past the last prebuilt day, cycle through the
      calendar rather than showing nothing. The scheduled rebuild normally
      extends it long before this matters. */
@@ -105,6 +121,7 @@
       setText("quote-talk", entry.quote.talk);
       setText("quote-session", entry.quote.session);
       setLink("quote-link", entry.quote.url);
+      setPhoto(entry.quote);
     }
   }
 

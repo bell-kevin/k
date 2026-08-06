@@ -144,6 +144,25 @@ blockquote {
   line-height: 1;
 }
 
+/* The speaker, photographed giving the talk the quote is taken from. Sized in
+   rems and given its aspect ratio up front so the card does not jump when the
+   photo arrives. */
+.portrait {
+  margin: 1.4rem 0 0;
+  text-align: center;
+}
+
+.portrait img {
+  width: 100%;
+  max-width: 17rem;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--rule);
+  background: var(--rule);
+}
+
 .ref {
   margin: 1.15rem 0 0;
   padding-top: 1rem;

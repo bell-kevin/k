@@ -60,13 +60,16 @@ jobs:
       - name: Commit refreshed files
         continue-on-error: true
         run: |
-          if git diff --quiet -- data/daily.json index.html; then
+          # Speaker photos arrive and are pruned with the calendar, so they are
+          # committed alongside it; --porcelain also sees ones git has not
+          # tracked yet, which a plain diff would miss.
+          if [ -z "$(git status --porcelain -- data/daily.json index.html assets/speakers)" ]; then
             echo "Nothing changed."
             exit 0
           fi
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/daily.json index.html
+          git add -A data/daily.json index.html assets/speakers
           git commit -m "Readings for $(date -u +%Y-%m-%d)"
           git pull --rebase --autostash
           git push

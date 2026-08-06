@@ -37,7 +37,7 @@ verse is drawn from, so it stays in step with what wards are studying.
 | --- | --- |
 | Book of Mormon verse | All 239 Book of Mormon chapters |
 | Come, Follow Me verse | The weekly manuals covering the calendar, using the verses each week actually cites |
-| Conference quote | The most recent General Conference whose talks are published |
+| Conference quote | The most recent General Conference whose talks are published, with the speaker's photo from that talk |
 
 It filters each pool for passages that read well on their own — dropping
 genealogy, travelogue, mid-story narration and endnote bibliographies — then
@@ -87,6 +87,29 @@ days, with no date to keep in step by hand.
 
 The refetch runs Mondays and Thursdays, which bounds how long after publication
 a new conference takes to show up.
+
+### The speaker's photo
+
+Every conference talk carries a photo of that speaker at the pulpit — the
+picture the conference index uses as its thumbnail — and the quote card shows
+it beneath the quote.
+
+Those photos are **downloaded during the build and committed to
+`assets/speakers/`**, not hot-linked. Hot-linking would have meant every page
+view fetching an image from `churchofjesuschrist.org`, which is exactly the
+runtime dependency the rest of the site avoids; a local copy keeps a page view
+contacting nobody but the host serving the site, and keeps working offline and
+from a `file://` URL.
+
+The image URLs are IIIF, so the builder asks for the width it actually serves
+(480px, sharp at the card's 240px on a 2x display) rather than taking whatever
+size the page happened to link. That is about 35 files and 800 KB — one photo
+per talk that contributed a quote, fetched once and skipped on later builds
+since a talk's photo never changes. When a new conference takes over the pool,
+photos no longer reachable from the calendar are pruned in the same run.
+
+A talk whose photo cannot be fetched simply gets no photo: the figure is
+hidden, and the rest of the card is unchanged.
 
 **The page never contacts `churchofjesuschrist.org` at runtime.** Nothing is
 tracked, stored, or sent anywhere. If the Church's site changes shape, a page
@@ -153,20 +176,25 @@ Raise `--conferences` if you would rather trade freshness for variety.
 `--timezone` and the daily cron in `.github/workflows/deploy.yml` need to agree;
 change them together.
 
-Responses are cached under `.cache/`; delete it to force a clean fetch.
+Responses are cached under `.cache/`; delete it to force a clean fetch. Speaker
+photos are kept in `assets/speakers/` and are part of the site rather than the
+cache — delete one and the next full build downloads it again.
 
 ## Licensing, and what the licence does not cover
 
 The **code, styling and build tooling in this repository** are free software
 under the [GNU Affero General Public License v3](LICENSE) or later.
 
-The **scripture and General Conference text is not mine to license.** It is
-published by The Church of Jesus Christ of Latter-day Saints. The English text
-of the standard works is in the public domain in the United States; General
-Conference addresses are © Intellectual Reserve, Inc., and are reproduced here
-in short excerpts for personal, non-commercial study, with every quotation
-linking back to the official source. The AGPL applies to this project's own
-work only, and grants you no rights in the Church's content.
+The **scripture and General Conference text is not mine to license**, and
+neither are the speaker photographs in `assets/speakers/`. They are published by
+The Church of Jesus Christ of Latter-day Saints. The English text of the
+standard works is in the public domain in the United States; General Conference
+addresses and the conference photographs are © Intellectual Reserve, Inc., and
+are reproduced here in short excerpts for personal, non-commercial study, with
+every quotation linking back to the official source. The AGPL applies to this
+project's own work only, and grants you no rights in the Church's content —
+including the photographs, which are redistributed by this repository and are
+the part of it most clearly not covered by that licence.
 
 This site is not affiliated with, endorsed by, or produced by The Church of
 Jesus Christ of Latter-day Saints. If you want to reuse Church content beyond
