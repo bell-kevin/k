@@ -16,8 +16,23 @@
 <meta name="color-scheme" content="light dark">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>">
+<script>
+/* Apply a saved theme choice before the page is first painted, so a reader who
+   has overridden the system setting never sees the other theme flash past.
+   Small enough to inline; the rest of the toggle lives in assets/app.js. */
+try {
+  var saved = localStorage.getItem("theme");
+  if (saved === "light" || saved === "dark") {
+    document.documentElement.setAttribute("data-theme", saved);
+  }
+} catch (e) { /* storage blocked -- follow the system setting, as before */ }
+</script>
 </head>
 <body data-built-for="{{DATE_ISO}}">
+
+<div class="toolbar">
+  <button type="button" id="theme-toggle" class="theme-toggle" hidden>Theme: <span id="theme-mode" aria-live="polite">Auto</span></button>
+</div>
 
 <header class="masthead">
   <p class="eyebrow">No app. No account. No sign-in.</p>

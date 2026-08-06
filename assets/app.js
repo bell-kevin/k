@@ -4,15 +4,69 @@
 
    Enhancement only. Today's readings are already in the HTML, baked in when
    the page was built, so the site is complete and correct with scripts
-   switched off. This file exists for one case: a reader whose own date has
-   moved past the date the page was built for -- someone ahead of the build
-   timezone, or looking at a copy served from cache. It swaps in the right
-   day from the prebuilt calendar.
+   switched off. This file does two things:
 
-   No network calls to anyone else; nothing is tracked, stored or sent. */
+     1. offers a theme toggle, for a reader who wants the other theme rather
+        than the one their system asks for;
+     2. swaps in the right day from the prebuilt calendar for a reader whose
+        own date has moved past the date the page was built for -- someone
+        ahead of the build timezone, or looking at a copy served from cache.
+
+   No network calls to anyone else; nothing is tracked or sent. The only thing
+   stored is the theme choice, in this browser, and only once one is made. */
 
 (function () {
   "use strict";
+
+  /* ---------- theme ----------
+
+     The system setting decides on its own until the reader says otherwise,
+     so the cycle runs Auto -> Light -> Dark -> Auto: choosing a theme is
+     always reversible, back to simply following the system again. */
+
+  var MODES = ["auto", "light", "dark"];
+  var LABELS = { auto: "Auto", light: "Light", dark: "Dark" };
+  var HINTS = {
+    auto: "Following your system setting. Click for light.",
+    light: "Light. Click for dark.",
+    dark: "Dark. Click to follow your system setting again."
+  };
+
+  function storedMode() {
+    try {
+      var saved = localStorage.getItem("theme");
+      return saved === "light" || saved === "dark" ? saved : "auto";
+    } catch (e) {
+      return "auto";
+    }
+  }
+
+  function applyMode(mode, button) {
+    var root = document.documentElement;
+    // Auto is the absence of a choice, so it clears both the attribute the
+    // stylesheet reads and the stored value the next page load reads.
+    if (mode === "auto") root.removeAttribute("data-theme");
+    else root.setAttribute("data-theme", mode);
+
+    try {
+      if (mode === "auto") localStorage.removeItem("theme");
+      else localStorage.setItem("theme", mode);
+    } catch (e) { /* storage blocked -- the choice just won't outlast the page */ }
+
+    document.getElementById("theme-mode").textContent = LABELS[mode];
+    button.title = HINTS[mode];
+  }
+
+  var toggle = document.getElementById("theme-toggle");
+  if (toggle) {
+    applyMode(storedMode(), toggle);
+    toggle.hidden = false;
+    toggle.addEventListener("click", function () {
+      applyMode(MODES[(MODES.indexOf(storedMode()) + 1) % MODES.length], toggle);
+    });
+  }
+
+  /* ---------- the day ---------- */
 
   var builtFor = document.body.getAttribute("data-built-for");
 

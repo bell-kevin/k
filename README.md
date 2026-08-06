@@ -112,8 +112,25 @@ A talk whose photo cannot be fetched simply gets no photo: the figure is
 hidden, and the rest of the card is unchanged.
 
 **The page never contacts `churchofjesuschrist.org` at runtime.** Nothing is
-tracked, stored, or sent anywhere. If the Church's site changes shape, a page
-view is unaffected; only a rebuild would notice.
+tracked or sent anywhere, and the only thing stored is a theme choice, in your
+own browser, and only if you make one. If the Church's site changes shape, a
+page view is unaffected; only a rebuild would notice.
+
+## Light and dark
+
+The page follows your system's light or dark setting on its own, as it always
+has. A **Theme** button in the top corner is there for when you want the other
+one anyway — it cycles Auto → Light → Dark → Auto, so an override is always
+reversible back to simply following the system again.
+
+A choice is remembered in `localStorage` under `theme` and applied by a short
+inline script in `<head>`, before the page is first painted, so overriding a
+dark system to light never flashes dark on the way in. Nothing else is stored,
+and the entry is removed outright when you cycle back to Auto.
+
+The button is hidden in the markup and revealed by the script, so with
+JavaScript switched off you are not shown a control that cannot do anything —
+the page just follows the system setting, exactly as before.
 
 ## It works with JavaScript switched off
 
@@ -121,11 +138,12 @@ view is unaffected; only a rebuild would notice.
 **already written into the markup**, so the page is complete before any script
 runs. With scripts disabled you get the full page — all three cards, every link.
 
-The script is enhancement only, and does nothing at all unless the reader's own
-date has moved past the date the page was built for. In that one case it swaps
-in the right day from `data/daily.json`. If that fetch fails, the baked-in
-readings stay put and the date shown next to them is the date they belong to, so
-the page never claims a reading is today's when it isn't.
+The script is enhancement only. Apart from wiring up the theme button, it does
+nothing at all unless the reader's own date has moved past the date the page was
+built for. In that one case it swaps in the right day from `data/daily.json`. If
+that fetch fails, the baked-in readings stay put and the date shown next to them
+is the date they belong to, so the page never claims a reading is today's when
+it isn't.
 
 Two scheduled GitHub Actions keep it current:
 

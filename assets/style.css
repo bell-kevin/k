@@ -14,8 +14,10 @@
   --shadow:     0 1px 2px rgba(40, 30, 15, .05), 0 6px 20px rgba(40, 30, 15, .05);
 }
 
+/* The system setting still decides on its own, as it always has -- unless the
+   reader has overridden it, which is what data-theme on <html> records. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --paper:      #16171a;
     --card:       #1d1f23;
     --ink:        #ece8e1;
@@ -28,6 +30,25 @@
   }
 }
 
+/* Chosen dark, on a system set to light. Keep this palette identical to the
+   one above -- they are the same theme reached two different ways. */
+:root[data-theme="dark"] {
+  --paper:      #16171a;
+  --card:       #1d1f23;
+  --ink:        #ece8e1;
+  --ink-soft:   #b3ada3;
+  --ink-faint:  #857f76;
+  --rule:       #2e3238;
+  --accent:     #d8b878;
+  --accent-ink: #e6c88a;
+  --shadow:     0 1px 2px rgba(0, 0, 0, .3), 0 6px 20px rgba(0, 0, 0, .28);
+}
+
+/* Tell the browser too, so its own furniture -- scrollbars, form controls,
+   the canvas behind the page -- follows the choice rather than the system. */
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"]  { color-scheme: dark; }
+
 *, *::before, *::after { box-sizing: border-box; }
 
 body {
@@ -39,6 +60,33 @@ body {
         "Helvetica Neue", Arial, sans-serif;
   -webkit-text-size-adjust: 100%;
   text-rendering: optimizeLegibility;
+}
+
+/* ---------- theme toggle ---------- */
+
+/* Hidden in the markup and revealed by the script, so a reader without
+   JavaScript is not shown a button that cannot do anything. */
+.toolbar {
+  max-width: 46rem;
+  margin: 0 auto clamp(.75rem, 2vw, 1.25rem);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.theme-toggle {
+  font: inherit;
+  font-size: .78rem;
+  padding: .3rem .85rem;
+  color: var(--ink-soft);
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  color: var(--ink);
+  border-color: var(--ink-faint);
 }
 
 /* ---------- masthead ---------- */
@@ -233,5 +281,5 @@ a:focus-visible, :focus-visible {
 @media print {
   body { background: #fff; color: #000; padding: 0; }
   .card { border: none; box-shadow: none; page-break-inside: avoid; }
-  .eyebrow, .colophon { display: none; }
+  .eyebrow, .colophon, .toolbar { display: none; }
 }
