@@ -36,7 +36,7 @@ verse is drawn from, so it stays in step with what wards are studying.
 | Card | Source |
 | --- | --- |
 | Book of Mormon verse | All 239 Book of Mormon chapters |
-| Come, Follow Me verse | The current year's weekly manual, using the verses each week actually cites |
+| Come, Follow Me verse | The weekly manuals covering the calendar, using the verses each week actually cites |
 | Conference quote | The most recent General Conference whose talks are published |
 
 It filters each pool for passages that read well on their own — dropping
@@ -46,6 +46,28 @@ writes a prebuilt calendar of daily picks to `data/daily.json`.
 Each day's pick is indexed from a fixed epoch rather than from whenever the
 calendar was last built, so a given date always resolves to the same verse and a
 rebuild part-way through the day does not change it under the reader.
+
+### Following the Come, Follow Me curriculum automatically
+
+Come, Follow Me rotates through the four standard works on a fixed cycle — Old
+Testament, New Testament, Book of Mormon, Doctrine and Covenants — so a year's
+manual is *derivable* rather than something to look up:
+
+| 2026 | 2027 | 2028 | 2029 | 2030 |
+| --- | --- | --- | --- | --- |
+| Old Testament | New Testament | Book of Mormon | Doctrine and Covenants | Old Testament |
+
+The builder derives each year's slug from that cycle and then **probes for it**,
+the same way it handles conference: the cycle says which manual a year *should*
+have, and only the site can say whether it is readable yet. An unpublished year
+answers 404; one that is staged but still embargoed answers 401. Either way it is
+left out and retried on the next refetch, so a new manual joins the calendar
+within days of going public.
+
+Because manuals tile contiguously — the 2026 manual ends December 27 and the
+2027 manual's opening week starts December 28 — the years merge with no gap at
+the January changeover. The builder covers two years by default (`--cfm-years`),
+so next year's manual is already in the calendar long before it is needed.
 
 ### Following General Conference automatically
 
@@ -115,10 +137,14 @@ python tools/build_daily.py --start 2027-01-01       # start the calendar at a d
 python tools/build_daily.py --conferences 4          # quote from the last four conferences
 python tools/build_daily.py --timezone Europe/London # whose "today" the page is built for
 python tools/build_daily.py --render-only --date 2026-12-25   # render a specific day
+python tools/build_daily.py --cfm-years 3            # build a third year of manuals
 python tools/build_daily.py \
     --manual come-follow-me-for-home-and-church-new-testament-2027 \
-    --manual-year 2027                               # next year's manual
+    --manual-year 2027                               # pin one manual, skipping the cycle
 ```
+
+`--manual` is an override for testing; leave it alone and the four-year cycle
+picks the manuals on its own.
 
 Quoting only the most recent conference gives a pool of roughly 250 passages, so
 over a two-year calendar a quote comes round again about every eight months.

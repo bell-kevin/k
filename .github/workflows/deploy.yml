@@ -11,7 +11,9 @@ on:
     # Twice a week, refetch to extend the calendar and pick up new content.
     # General Conference is held on a weekend and its talks are posted over the
     # following days, so checking Mondays and Thursdays picks up a new
-    # conference within a few days of the text going up.
+    # conference within a few days of the text going up. The same run probes
+    # for the next Come, Follow Me manual, so the January curriculum changeover
+    # needs no edit either -- see resolve_cfm_manuals in tools/build_daily.py.
     - cron: "0 9 * * 1,4"
   workflow_dispatch:
     inputs:

@@ -115,7 +115,10 @@ def fetch(uri: str, retries: int = 3) -> dict | None:
             return data
         except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError,
                 ValueError) as err:
-            if isinstance(err, urllib.error.HTTPError) and err.code == 404:
+            # 404 means no such page. 401/403 means the page exists but is not
+            # public yet -- a manual is staged behind auth for months before it
+            # is published. Neither answer improves on a retry.
+            if isinstance(err, urllib.error.HTTPError) and err.code in (401, 403, 404):
                 return None
             if attempt == retries - 1:
                 print(f"  ! giving up on {uri}: {err}", file=sys.stderr)
@@ -206,6 +209,48 @@ def build_bom_pool() -> list[dict]:
 MONTHS = {m: i for i, m in enumerate(
     ["January", "February", "March", "April", "May", "June", "July", "August",
      "September", "October", "November", "December"], start=1)}
+
+# Come, Follow Me rotates through the four standard works on a fixed cycle, so
+# a year's manual is derivable rather than something to look up: 2026 Old
+# Testament, 2027 New Testament, 2028 Book of Mormon, 2029 Doctrine and
+# Covenants, then round again. Deriving the slug and probing for it is what
+# makes the January changeover automatic -- a scheduled rebuild picks up a new
+# manual within days of it going public, with no edit here.
+CFM_CYCLE = ["old-testament", "new-testament", "book-of-mormon",
+             "doctrine-and-covenants"]
+CFM_CYCLE_EPOCH = 2026  # the year CFM_CYCLE[0] is taught
+CFM_SLUG = "come-follow-me-for-home-and-church-{volume}-{year}"
+
+
+def cfm_manual_for(year: int) -> str:
+    return CFM_SLUG.format(volume=CFM_CYCLE[(year - CFM_CYCLE_EPOCH) % len(CFM_CYCLE)],
+                           year=year)
+
+
+def resolve_cfm_manuals(start: dt.date, end: dt.date, limit: int = 2
+                        ) -> list[tuple[str, int]]:
+    """The published manuals covering a calendar span, oldest first.
+
+    A manual's opening week starts in late December of the preceding year, so
+    the year after the span's last day can still own days inside it -- hence
+    probing one year past `end`. Only the site can say whether a manual is
+    readable: an unpublished year answers 404, and one that is staged but still
+    embargoed answers 401, so probing keeps unreadable manuals out of the
+    calendar without needing to know the publication date.
+
+    Manuals tile contiguously (2026 ends December 27, the 2027 opening week
+    starts December 28), so merging several years leaves no gap or overlap.
+    """
+    found: list[tuple[str, int]] = []
+    for year in range(start.year, end.year + 2):
+        if len(found) >= limit:
+            break
+        manual = cfm_manual_for(year)
+        if fetch(f"/manual/{manual}"):
+            found.append((manual, year))
+        else:
+            print(f"  - Come, Follow Me {year} not published yet; skipping")
+    return found
 
 
 def parse_week_range(title: str, year: int) -> tuple[dt.date, dt.date] | None:
@@ -611,8 +656,14 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--start", default=None, help="first date (YYYY-MM-DD)")
     ap.add_argument("--days", type=int, default=730, help="how many days to build")
-    ap.add_argument("--manual", default="come-follow-me-for-home-and-church-old-testament-2026")
-    ap.add_argument("--manual-year", type=int, default=2026)
+    ap.add_argument("--manual", default=None,
+                    help="pin a Come, Follow Me manual slug instead of deriving "
+                         "it from the four-year cycle (needs --manual-year)")
+    ap.add_argument("--manual-year", type=int, default=None,
+                    help="the year --manual is taught")
+    ap.add_argument("--cfm-years", type=int, default=2,
+                    help="how many years of Come, Follow Me manuals to build "
+                         "(2 = this year's and next year's, once published)")
     ap.add_argument("--conferences", type=int, default=1,
                     help="how many recent conferences to quote from "
                          "(1 = the most recent one only)")
@@ -642,10 +693,21 @@ def main() -> int:
 
     start = (dt.date.fromisoformat(args.start) if args.start
              else dt.date.today() - dt.timedelta(days=30))
+    end = start + dt.timedelta(days=args.days - 1)
+
+    if args.manual and args.manual_year is None:
+        print("error: --manual-year is required with --manual", file=sys.stderr)
+        return 1
 
     bom = build_bom_pool()
     quotes = build_quote_pool(args.conferences)
-    weeks = build_cfm_weeks(args.manual, args.manual_year)
+
+    manuals = ([(args.manual, args.manual_year)] if args.manual
+               else resolve_cfm_manuals(start, end, args.cfm_years))
+    weeks: list[dict] = []
+    for manual, manual_year in manuals:
+        weeks.extend(build_cfm_weeks(manual, manual_year))
+    weeks.sort(key=lambda w: w["start"])
 
     if not bom or not quotes:
         print("error: could not build the required pools", file=sys.stderr)
@@ -680,17 +742,21 @@ def main() -> int:
     payload = {
         "generated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "first": start.isoformat(),
-        "last": (start + dt.timedelta(days=args.days - 1)).isoformat(),
-        "cfmManual": args.manual,
+        "last": end.isoformat(),
+        "cfmManuals": [manual for manual, _ in manuals],
         "days": days,
     }
     with open(OUT, "w", encoding="utf-8") as fh:
         json.dump(payload, fh, ensure_ascii=False, separators=(",", ":"))
 
-    covered = sum(1 for d in days.values() if "cfm" in d)
+    covered = sorted(d for d, entry in days.items() if "cfm" in entry)
     print(f"\nWrote {OUT.relative_to(ROOT)}")
     print(f"  {len(days)} days ({payload['first']} .. {payload['last']})")
-    print(f"  {covered} days with a Come, Follow Me verse")
+    # The last covered day is when the Come, Follow Me card would go dark if no
+    # further manual were ever published, so it is worth stating outright.
+    print(f"  {len(covered)} days with a Come, Follow Me verse"
+          + (f" ({covered[0]} .. {covered[-1]})" if covered else ""))
+    print(f"  manuals: {', '.join(m for m, _ in manuals) or 'none'}")
     print(f"  {OUT.stat().st_size / 1024:.0f} KB")
 
     date = render_site(payload, args.timezone, as_of)
