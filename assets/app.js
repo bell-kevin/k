@@ -4,11 +4,12 @@
 
    Enhancement only. Today's readings are already in the HTML, baked in when
    the page was built, so the site is complete and correct with scripts
-   switched off. This file does two things:
+   switched off. This file does three things:
 
      1. offers a theme toggle, for a reader who wants the other theme rather
         than the one their system asks for;
-     2. swaps in the right day from the prebuilt calendar for a reader whose
+     2. hands a card to the reader's own share sheet, or to their clipboard;
+     3. swaps in the right day from the prebuilt calendar for a reader whose
         own date has moved past the date the page was built for -- someone
         ahead of the build timezone, or looking at a copy served from cache.
 
@@ -65,6 +66,101 @@
       applyMode(MODES[(MODES.indexOf(storedMode()) + 1) % MODES.length], toggle);
     });
   }
+
+  /* ---------- sharing ----------
+
+     A card can be passed on as it stands: the reading, whose words they are,
+     and the link back to the official source. Handing that to the reader's
+     own share sheet is the whole of it -- the sheet is the operating system's,
+     the apps in it are theirs, and nothing about what was shared is sent
+     anywhere by this page.
+
+     Each card is read at the moment its button is clicked rather than up
+     front, so a card the day-swap below has since rewritten shares the
+     reading the reader is actually looking at. */
+
+  var SHAREABLE = [
+    { button: "share-bom",   text: "bom-text",   credit: "bom-ref",       link: "bom-link" },
+    { button: "share-cfm",   text: "cfm-text",   credit: "cfm-ref",       link: "cfm-link" },
+    { button: "share-quote", text: "quote-text", credit: "quote-speaker", link: "quote-link" }
+  ];
+
+  function textOf(id) {
+    var el = document.getElementById(id);
+    // textContent, so the decorative quotation mark and the separators the
+    // stylesheet draws around the speaker stay out of what gets shared.
+    return el ? el.textContent.trim() : "";
+  }
+
+  /* Reading, attribution, link -- the shape a passage arrives in when it is
+     shared from the Church's own app, so one pasted from here sits in a thread
+     beside one from there without looking out of place. */
+  function passage(spec) {
+    var link = document.getElementById(spec.link);
+    return [textOf(spec.text), textOf(spec.credit), link ? link.href : ""]
+      .filter(Boolean).join("\n\n");
+  }
+
+  /* The way back for a browser with no share sheet, which mostly means a
+     desktop one. The clipboard API needs a secure context, so a page opened
+     over plain http or straight off disk falls through to a scratch textarea
+     -- the older way, still the only one that works there. */
+  function copy(payload) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(payload);
+    }
+    return new Promise(function (resolve, reject) {
+      var field = document.createElement("textarea");
+      field.value = payload;
+      field.setAttribute("readonly", "");
+      field.style.position = "fixed";
+      field.style.top = "0";
+      field.style.opacity = "0";
+      document.body.appendChild(field);
+      field.select();
+      var copied = false;
+      try {
+        copied = document.execCommand("copy");
+      } catch (e) {
+        copied = false;
+      }
+      document.body.removeChild(field);
+      if (copied) resolve();
+      else reject(new Error("copy unavailable"));
+    });
+  }
+
+  /* Say what happened on the button itself, then put it back. The button has
+     focus at this point, having just been clicked, so the changed label is
+     read out as well as seen. */
+  function flash(button, message) {
+    button.textContent = message;
+    window.clearTimeout(button.resetLabel);
+    button.resetLabel = window.setTimeout(function () {
+      button.textContent = "Share";
+    }, 2000);
+  }
+
+  SHAREABLE.forEach(function (spec) {
+    var button = document.getElementById(spec.button);
+    if (!button) return;
+    button.hidden = false;
+    button.addEventListener("click", function () {
+      var payload = passage(spec);
+      if (!payload) return;
+      if (navigator.share) {
+        // Backing out of the share sheet rejects the promise. That is a
+        // reader changing their mind, not a failure to report to them.
+        navigator.share({ title: document.title, text: payload })
+                 .catch(function () {});
+        return;
+      }
+      copy(payload).then(
+        function () { flash(button, "Copied"); },
+        function () { flash(button, "Couldn't copy"); }
+      );
+    });
+  });
 
   /* ---------- the day ---------- */
 

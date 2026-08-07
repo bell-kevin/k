@@ -698,6 +698,7 @@ def render_cards(entry: dict) -> str:
     <h2 class="card__label">Book of Mormon <span>Verse of the Day</span></h2>
     <blockquote class="scripture" id="bom-text">{esc(bom.get('text', ''))}</blockquote>
     <p class="ref"><a id="bom-link" href="{esc(bom.get('url', '#'))}" target="_blank" rel="noopener noreferrer"><cite id="bom-ref">{esc(bom.get('reference', ''))}</cite></a></p>
+    <button type="button" class="share" id="share-bom" hidden>Share</button>
   </section>
 
   <section class="card" id="card-cfm"{cfm_hidden}>
@@ -705,6 +706,7 @@ def render_cards(entry: dict) -> str:
     <p class="week">This week: <a id="cfm-week-link" href="{esc(cfm.get('weekUrl', '#'))}" target="_blank" rel="noopener noreferrer"><span id="cfm-week">{esc(cfm.get('week', ''))}</span></a></p>
     <blockquote class="scripture" id="cfm-text">{esc(cfm.get('text', ''))}</blockquote>
     <p class="ref"><a id="cfm-link" href="{esc(cfm.get('url', '#'))}" target="_blank" rel="noopener noreferrer"><cite id="cfm-ref">{esc(cfm.get('reference', ''))}</cite></a></p>
+    <button type="button" class="share" id="share-cfm" hidden>Share</button>
   </section>
 
   <section class="card" id="card-quote">
@@ -716,6 +718,7 @@ def render_cards(entry: dict) -> str:
     <p class="ref">
       <span id="quote-speaker" class="speaker">{esc(quote.get('speaker', ''))}</span><a id="quote-link" href="{esc(quote.get('url', '#'))}" target="_blank" rel="noopener noreferrer"><cite id="quote-talk">{esc(quote.get('talk', ''))}</cite></a><span id="quote-session" class="session">{esc(quote.get('session', ''))}</span>
     </p>
+    <button type="button" class="share" id="share-quote" hidden>Share</button>
   </section>
 """
 

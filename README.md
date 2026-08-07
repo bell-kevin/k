@@ -132,15 +132,47 @@ The button is hidden in the markup and revealed by the script, so with
 JavaScript switched off you are not shown a control that cannot do anything —
 the page just follows the system setting, exactly as before.
 
+## Sharing a card
+
+Each card has a **Share** button under it, which hands the reading to your own
+share sheet — the same gesture the Gospel Library app uses, and the text lands
+in the same shape, so one passed on from here sits in a thread beside one from
+there without looking out of place:
+
+```
+On this glorious Easter Sunday, I have chosen to speak first about the
+Resurrection, which is a pillar of our faith.
+
+President Dallin H. Oaks
+
+https://www.churchofjesuschrist.org/study/general-conference/2026/04/49oaks?lang=eng&id=p_mZMDI#p_mZMDI
+```
+
+The link is the official source on `churchofjesuschrist.org`, pointing at the
+exact verse or paragraph — never at this site — so whoever receives it can read
+it where it was published.
+
+The sheet is your operating system's and the apps in it are yours; **this page
+sends nothing anywhere and is never told what you shared, or with whom.** On a
+desktop browser, which usually has no share sheet, the button copies the same
+text to your clipboard instead and says so.
+
+Each card is read at the moment its button is clicked, so if the script has
+moved the page on to a new day (below), you share the reading actually in front
+of you. Like the theme button, the share buttons are hidden in the markup and
+revealed by the script — with JavaScript off there is no share sheet to reach,
+so no button is shown.
+
 ## It works with JavaScript switched off
 
 `index.html` is generated from `tools/template.html` with the day's readings
 **already written into the markup**, so the page is complete before any script
 runs. With scripts disabled you get the full page — all three cards, every link.
 
-The script is enhancement only. Apart from wiring up the theme button, it does
-nothing at all unless the reader's own date has moved past the date the page was
-built for. In that one case it swaps in the right day from `data/daily.json`. If
+The script is enhancement only. Apart from wiring up the theme and share
+buttons, it does nothing at all unless the reader's own date has moved past the
+date the page was built for. In that one case it swaps in the right day from
+`data/daily.json`. If
 that fetch fails, the baked-in readings stay put and the date shown next to them
 is the date they belong to, so the page never claims a reading is today's when
 it isn't.
