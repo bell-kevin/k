@@ -665,6 +665,42 @@ def human_date(date: dt.date) -> str:
             f"{date.day}, {date.year}")
 
 
+def share_text(text: str, credit: str, url: str) -> str:
+    """A card as it goes out: the reading, whose words they are, and the link
+    back to the official source -- the same three parts, in the same order,
+    that the script hands to a share sheet, so a card passed on from a page
+    without JavaScript arrives looking no different."""
+    return "\n\n".join(part for part in (text, credit, url) if part)
+
+
+def share_block(card: str, subject: str, payload: str) -> str:
+    """The share block for a reader whose JavaScript is switched off.
+
+    A share sheet and a clipboard are both things only a script can ask for,
+    so this reaches the reader's apps the one way markup can: a mail link and
+    a message link, each already filled in, each handed to whichever app the
+    operating system has registered for it. The page still sends nothing
+    anywhere, and nothing goes anywhere at all until the reader presses send
+    in an app of their own. The text sits underneath them ready to be selected
+    and copied, for wherever else they might want to put it.
+
+    The script hides this block once it has a working Share button, so nobody
+    is offered the same thing twice.
+    """
+    quoted = urllib.parse.quote(payload, safe="")
+    mail = f"mailto:?subject={urllib.parse.quote(subject, safe='')}&body={quoted}"
+    # A message link is spelled two ways: `sms:?body=` is the standard, and
+    # what Android reads; iOS wants its parameters introduced by an ampersand.
+    # `?&body=` is the spelling both of them accept.
+    sms = f"sms:?&body={quoted}"
+    return f"""<details class="share-fallback" id="share-fallback-{card}">
+      <summary>Share</summary>
+      <p class="share-fallback__apps"><a href="{esc(mail)}">Email this</a><a href="{esc(sms)}">Send as a message</a></p>
+      <label class="share-fallback__hint" for="share-payload-{card}">Or copy it from here:</label>
+      <textarea class="share-fallback__text" id="share-payload-{card}" rows="10" readonly spellcheck="false">{esc(payload)}</textarea>
+    </details>"""
+
+
 def today_in(timezone: str) -> dt.date:
     """Today's date where the site's readers are, not in UTC."""
     try:
@@ -693,12 +729,27 @@ def render_cards(entry: dict) -> str:
     photo_src = f' src="{esc(photo)}"' if photo else ""
     photo_alt = esc(f"{quote.get('speaker', '')} speaking at general conference") if photo else ""
 
+    # Each card's reading written out once more, in the shape it is passed on
+    # in, for the share block underneath it. A talk is named as well as
+    # attributed in the subject line, which is all an inbox has to go on.
+    speaker, talk = quote.get("speaker", ""), quote.get("talk", "")
+    bom_share = share_block(
+        "bom", bom.get("reference", ""),
+        share_text(bom.get("text", ""), bom.get("reference", ""), bom.get("url", "")))
+    cfm_share = share_block(
+        "cfm", cfm.get("reference", ""),
+        share_text(cfm.get("text", ""), cfm.get("reference", ""), cfm.get("url", "")))
+    quote_share = share_block(
+        "quote", " — ".join(part for part in (speaker, talk) if part),
+        share_text(quote.get("text", ""), speaker, quote.get("url", "")))
+
     return f"""
   <section class="card" id="card-bom">
     <h2 class="card__label">Book of Mormon <span>Verse of the Day</span></h2>
     <blockquote class="scripture" id="bom-text">{esc(bom.get('text', ''))}</blockquote>
     <p class="ref"><a id="bom-link" href="{esc(bom.get('url', '#'))}" target="_blank" rel="noopener noreferrer"><cite id="bom-ref">{esc(bom.get('reference', ''))}</cite></a></p>
     <button type="button" class="share" id="share-bom" hidden>Share</button>
+    {bom_share}
   </section>
 
   <section class="card" id="card-cfm"{cfm_hidden}>
@@ -707,6 +758,7 @@ def render_cards(entry: dict) -> str:
     <blockquote class="scripture" id="cfm-text">{esc(cfm.get('text', ''))}</blockquote>
     <p class="ref"><a id="cfm-link" href="{esc(cfm.get('url', '#'))}" target="_blank" rel="noopener noreferrer"><cite id="cfm-ref">{esc(cfm.get('reference', ''))}</cite></a></p>
     <button type="button" class="share" id="share-cfm" hidden>Share</button>
+    {cfm_share}
   </section>
 
   <section class="card" id="card-quote">
@@ -719,6 +771,7 @@ def render_cards(entry: dict) -> str:
       <span id="quote-speaker" class="speaker">{esc(quote.get('speaker', ''))}</span><a id="quote-link" href="{esc(quote.get('url', '#'))}" target="_blank" rel="noopener noreferrer"><cite id="quote-talk">{esc(quote.get('talk', ''))}</cite></a><span id="quote-session" class="session">{esc(quote.get('session', ''))}</span>
     </p>
     <button type="button" class="share" id="share-quote" hidden>Share</button>
+    {quote_share}
   </section>
 """
 

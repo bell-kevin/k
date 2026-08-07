@@ -159,19 +159,36 @@ text to your clipboard instead and says so.
 
 Each card is read at the moment its button is clicked, so if the script has
 moved the page on to a new day (below), you share the reading actually in front
-of you. Like the theme button, the share buttons are hidden in the markup and
-revealed by the script — with JavaScript off there is no share sheet to reach,
-so no button is shown.
+of you.
+
+### With JavaScript switched off
+
+A share sheet and a clipboard are both things only a script can ask for, so the
+button is hidden in the markup and revealed by the script. In its place, baked
+into the page, every card carries a **Share** disclosure that opens to the same
+reading in the same shape, reaching your apps the one way markup can:
+
+- **Email this** — a `mailto:` link, already filled in, handed to whichever mail
+  app your system has registered;
+- **Send as a message** — an `sms:` link, likewise, for your messaging app;
+- the text itself in a field below them, ready to select and copy for anywhere
+  else you want to put it.
+
+Nothing is sent by the page, and nothing goes anywhere at all until you press
+send in an app of your own. Where the script does run it hides this block as it
+brings the button up, so nobody is offered the same thing twice — and if the
+script never runs, or fails to load, the block simply stays where it is.
 
 ## It works with JavaScript switched off
 
 `index.html` is generated from `tools/template.html` with the day's readings
 **already written into the markup**, so the page is complete before any script
-runs. With scripts disabled you get the full page — all three cards, every link.
+runs. With scripts disabled you get the full page — all three cards, every link,
+and a way to share each of them (above).
 
-The script is enhancement only. Apart from wiring up the theme and share
-buttons, it does nothing at all unless the reader's own date has moved past the
-date the page was built for. In that one case it swaps in the right day from
+The script is enhancement only. Apart from the theme button and swapping the
+share block for a share sheet, it does nothing at all unless the reader's own
+date has moved past the date the page was built for. In that one case it swaps in the right day from
 `data/daily.json`. If
 that fetch fails, the baked-in readings stay put and the date shown next to them
 is the date they belong to, so the page never claims a reading is today's when
