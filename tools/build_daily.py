@@ -673,40 +673,40 @@ def share_text(text: str, credit: str, url: str) -> str:
     return "\n\n".join(part for part in (text, credit, url) if part)
 
 
-def share_block(card: str, subject: str, payload: str) -> str:
+def share_block(card: str, payload: str) -> str:
     """The share block for a reader whose JavaScript is switched off.
 
     A share sheet and a clipboard are both things only a script can ask for,
-    so this reaches the reader's apps the one way markup can: a mail link,
-    already filled in, handed to whichever app the operating system has
-    registered for it. The page still sends nothing anywhere, and nothing goes
-    anywhere at all until the reader presses send in an app of their own. The
-    text sits underneath it ready to be selected and copied, for wherever else
-    they might want to put it.
+    so what markup can offer in their place is the card itself, written out in
+    the shape it is passed on in, in a field ready to be selected and copied --
+    into a mail app, a message, a note, wherever the reader wants to put it.
+    The page sends nothing anywhere, and nothing goes anywhere at all until the
+    reader presses send in an app of their own.
 
-    There is deliberately no message link beside it. `sms:` carries a prefilled
-    body by custom only, never by specification -- Apple's own URL scheme
-    reference says the address must not include message text -- and the two
-    platforms disagree about how to introduce it, Android reading `sms:?body=`
-    and iOS `sms:&body=`. `sms:?&body=`, the spelling that tries to satisfy
-    both, is the one a phone that accepts neither shows nothing at all for: the
-    link is pressed and the page just sits there. A link that quietly does
-    nothing is worse than no link on a page that promises to work without
-    scripts, so the field below is the way to a messaging app -- select, copy,
-    paste, and certain of it.
+    There are deliberately no app links above the field. Whether a `mailto:`
+    or `sms:` link does anything at all is settled after the page is out of it,
+    when the browser hands the address to the operating system, and if that
+    handoff declines the page is told nothing: the link is pressed and it just
+    sits there. `mailto:` is at least specified, and it was offered here for a
+    while, but it was found dead on a current phone all the same -- a Pixel 9
+    Pro, Brave, scripts off -- and markup cannot ask first, cannot be told it
+    failed, and cannot fall back. `sms:` is worse: a prefilled body is custom
+    only, never specification, Apple's own URL scheme reference says the
+    address must not carry message text, and the platforms disagree over how to
+    introduce it, Android reading `sms:?body=` and iOS `sms:&body=`, while
+    `sms:?&body=` -- the spelling meant to satisfy both -- does nothing on a
+    phone that satisfies neither.
+
+    On a page that promises to work without scripts, a link that quietly fails
+    is worse than one never offered, so the field is the whole of it: select,
+    copy, paste, and certain of it on every phone there is.
 
     The script hides this block once it has a working Share button, so nobody
     is offered the same thing twice.
     """
-    # RFC 6068 spells a line break in a mail body CRLF, and clients that take
-    # it at its word run the lines together when handed a bare newline. The
-    # field below keeps the plain newlines, which is what a paste wants.
-    body = urllib.parse.quote(payload.replace("\n", "\r\n"), safe="")
-    mail = f"mailto:?subject={urllib.parse.quote(subject, safe='')}&body={body}"
     return f"""<details class="share-fallback" id="share-fallback-{card}">
       <summary>Share</summary>
-      <p class="share-fallback__apps"><a href="{esc(mail)}">Email this</a></p>
-      <label class="share-fallback__hint" for="share-payload-{card}">Or copy it, to send it any other way:</label>
+      <label class="share-fallback__hint" for="share-payload-{card}">Copy it, to send it any way you like:</label>
       <textarea class="share-fallback__text" id="share-payload-{card}" rows="10" readonly spellcheck="false">{esc(payload)}</textarea>
     </details>"""
 
@@ -740,18 +740,16 @@ def render_cards(entry: dict) -> str:
     photo_alt = esc(f"{quote.get('speaker', '')} speaking at general conference") if photo else ""
 
     # Each card's reading written out once more, in the shape it is passed on
-    # in, for the share block underneath it. A talk is named as well as
-    # attributed in the subject line, which is all an inbox has to go on.
-    speaker, talk = quote.get("speaker", ""), quote.get("talk", "")
+    # in, for the share block underneath it.
     bom_share = share_block(
-        "bom", bom.get("reference", ""),
+        "bom",
         share_text(bom.get("text", ""), bom.get("reference", ""), bom.get("url", "")))
     cfm_share = share_block(
-        "cfm", cfm.get("reference", ""),
+        "cfm",
         share_text(cfm.get("text", ""), cfm.get("reference", ""), cfm.get("url", "")))
     quote_share = share_block(
-        "quote", " — ".join(part for part in (speaker, talk) if part),
-        share_text(quote.get("text", ""), speaker, quote.get("url", "")))
+        "quote",
+        share_text(quote.get("text", ""), quote.get("speaker", ""), quote.get("url", "")))
 
     return f"""
   <section class="card" id="card-bom">

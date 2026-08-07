@@ -276,14 +276,6 @@ a:focus-visible, :focus-visible {
 .share-fallback > summary { list-style: none; }
 .share-fallback > summary::-webkit-details-marker { display: none; }
 
-.share-fallback__apps {
-  margin: 1rem 0 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: .4rem 1.4rem;
-  font-size: .9rem;
-}
-
 .share-fallback__hint {
   display: block;
   margin: 1rem 0 .4rem;

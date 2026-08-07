@@ -166,30 +166,38 @@ of you.
 A share sheet and a clipboard are both things only a script can ask for, so the
 button is hidden in the markup and revealed by the script. In its place, baked
 into the page, every card carries a **Share** disclosure that opens to the same
-reading in the same shape, reaching your apps the one way markup can:
+reading in the same shape, in a field ready to select and copy — into a mail
+app, a message, a note, wherever you want to put it. Nothing is sent by the
+page, and nothing goes anywhere at all until you press send in an app of your
+own.
 
-- **Email this** — a `mailto:` link, already filled in, handed to whichever mail
-  app your system has registered;
-- the text itself in a field below it, ready to select and copy for anywhere
-  else you want to put it — a message, a note, a chat.
+There are no app links above that field, and that is on purpose. Whether a
+`mailto:` or `sms:` link does anything at all is settled after the page is out
+of it, when the browser hands the address to your operating system — and if
+that handoff declines, the page is never told. You press the link, and it just
+sits there.
 
-Nothing is sent by the page, and nothing goes anywhere at all until you press
-send in an app of your own.
+**Email this** was offered here for a while, `mailto:` being at least a
+specified scheme, and it was found dead on a current phone all the same: a
+Pixel 9 Pro on Android 17, Brave 1.93.130, scripts off. Markup cannot ask
+whether the link will work, cannot be told that it didn't, and cannot fall back
+to anything, so it is gone. A message link never got that far — a prefilled
+body is only a custom, and not one both platforms share. Android reads
+`sms:?body=`, iOS reads `sms:&body=`, and [Apple's own URL scheme
+reference][sms-ref] says the address must not carry message text at all; the
+`sms:?&body=` spelling that tries to satisfy both is the one a phone satisfying
+neither does nothing whatsoever for.
 
-There is no message link beside the mail one, and that is on purpose. A `tel:`
-or `mailto:` link is specified; an `sms:` link carrying a prefilled body is
-only a custom, and not one both platforms share — Android reads `sms:?body=`,
-iOS reads `sms:&body=`, and [Apple's own URL scheme reference][sms-ref] says
-the address must not include message text at all. The `sms:?&body=` spelling
-that tries to satisfy both is the one a phone satisfying neither does nothing
-whatsoever for: you press it, and the page just sits there. On a page that
-promises to work without scripts, a link that quietly fails is worse than a
-link that was never offered, so copying the field is the route to a messaging
-app instead — one that no phone can decline.
+On a page that promises to work without scripts, a link that quietly fails is
+worse than a link that was never offered, so copying the field is the route to
+all of those apps instead — select, copy, paste, and certain of it on every
+phone there is.
 
-[sms-ref]: https://developer.apple.com/library/archive/featuredarticles/iPhoneURLScheme_Reference/SMSLinks/SMSLinks.html Where the script does run it hides this block as it
-brings the button up, so nobody is offered the same thing twice — and if the
-script never runs, or fails to load, the block simply stays where it is.
+Where the script does run it hides this block as it brings the button up, so
+nobody is offered the same thing twice — and if the script never runs, or fails
+to load, the block simply stays where it is.
+
+[sms-ref]: https://developer.apple.com/library/archive/featuredarticles/iPhoneURLScheme_Reference/SMSLinks/SMSLinks.html
 
 ## It works with JavaScript switched off
 
