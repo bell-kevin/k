@@ -174,6 +174,16 @@ blockquote {
   line-height: 1.62;
 }
 
+/* A scripture mastery passage is quoted whole, however many verses it runs to,
+   because the verses of one teach as a piece -- Moroni 7:45's account of what
+   charity does only lands with 7:47's "charity is the pure love of Christ"
+   after it. A long one is set a step smaller so it still reads as a single
+   block on a phone rather than filling the screen. */
+.scripture--long {
+  font-size: clamp(1rem, 2.3vw, 1.12rem);
+  line-height: 1.58;
+}
+
 .quote {
   font-size: clamp(1.05rem, 2.4vw, 1.22rem);
   line-height: 1.6;

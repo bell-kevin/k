@@ -203,6 +203,20 @@
     if (el && href) el.href = href;
   }
 
+  /* A scripture mastery passage is quoted whole and can run to several verses,
+     so a long reading is set a step smaller -- the same threshold the builder
+     uses when it bakes the markup, so a swapped-in day looks like a built one. */
+  var LONG_READING = 420;
+
+  function setReading(id, text) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = text || "";
+    el.className = (text || "").length > LONG_READING
+      ? "scripture scripture--long"
+      : "scripture";
+  }
+
   function setHidden(id, hidden) {
     var el = document.getElementById(id);
     if (el) el.hidden = hidden;
@@ -258,7 +272,7 @@
 
   function render(entry) {
     if (entry.bom) {
-      setText("bom-text", entry.bom.text);
+      setReading("bom-text", entry.bom.text);
       setText("bom-ref", entry.bom.reference);
       setLink("bom-link", entry.bom.url);
     }
@@ -266,7 +280,7 @@
     // The Come, Follow Me card only applies to dates the published manual
     // covers, so it is hidden rather than shown empty.
     if (entry.cfm) {
-      setText("cfm-text", entry.cfm.text);
+      setReading("cfm-text", entry.cfm.text);
       setText("cfm-ref", entry.cfm.reference);
       setLink("cfm-link", entry.cfm.url);
       setText("cfm-week", entry.cfm.week);
