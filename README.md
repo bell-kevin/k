@@ -170,12 +170,24 @@ reading in the same shape, reaching your apps the one way markup can:
 
 - **Email this** — a `mailto:` link, already filled in, handed to whichever mail
   app your system has registered;
-- **Send as a message** — an `sms:` link, likewise, for your messaging app;
-- the text itself in a field below them, ready to select and copy for anywhere
-  else you want to put it.
+- the text itself in a field below it, ready to select and copy for anywhere
+  else you want to put it — a message, a note, a chat.
 
 Nothing is sent by the page, and nothing goes anywhere at all until you press
-send in an app of your own. Where the script does run it hides this block as it
+send in an app of your own.
+
+There is no message link beside the mail one, and that is on purpose. A `tel:`
+or `mailto:` link is specified; an `sms:` link carrying a prefilled body is
+only a custom, and not one both platforms share — Android reads `sms:?body=`,
+iOS reads `sms:&body=`, and [Apple's own URL scheme reference][sms-ref] says
+the address must not include message text at all. The `sms:?&body=` spelling
+that tries to satisfy both is the one a phone satisfying neither does nothing
+whatsoever for: you press it, and the page just sits there. On a page that
+promises to work without scripts, a link that quietly fails is worse than a
+link that was never offered, so copying the field is the route to a messaging
+app instead — one that no phone can decline.
+
+[sms-ref]: https://developer.apple.com/library/archive/featuredarticles/iPhoneURLScheme_Reference/SMSLinks/SMSLinks.html Where the script does run it hides this block as it
 brings the button up, so nobody is offered the same thing twice — and if the
 script never runs, or fails to load, the block simply stays where it is.
 
