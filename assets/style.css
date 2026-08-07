@@ -242,11 +242,14 @@ a:focus-visible, :focus-visible {
 
 /* ---------- share ---------- */
 
-/* Hidden in the markup and revealed by the script, like the theme toggle:
-   with JavaScript off there is no share sheet and no clipboard to reach, so
-   there is no button either. Both themes put the page's own background colour
-   on the accent, which stays legible whichever way round they are. */
-.share {
+/* Two ways to the same offer, so they are given the same pill: the button,
+   hidden in the markup and revealed by the script, which opens the reader's
+   share sheet; and the block underneath it, which is the whole of sharing for
+   a reader with JavaScript switched off and which the script puts away when
+   the button comes up. Both themes put the page's own background colour on
+   the accent, which stays legible whichever way round they are. */
+.share,
+.share-fallback > summary {
   margin: 1.15rem 0 0;
   font: inherit;
   font-size: .85rem;
@@ -262,9 +265,48 @@ a:focus-visible, :focus-visible {
 
 /* An author `display` beats the browser's own rule for [hidden], so the
    attribute needs saying again here or the button shows through. */
-.share[hidden] { display: none; }
+.share[hidden], .share-fallback[hidden] { display: none; }
 
-.share:hover { background: var(--accent-ink); }
+.share:hover,
+.share-fallback > summary:hover { background: var(--accent-ink); }
+
+/* The disclosure triangle would sit outside the pill. Taking `display` off
+   `list-item` is what removes it in most browsers; Safari wants its own
+   pseudo-element told as well. */
+.share-fallback > summary { list-style: none; }
+.share-fallback > summary::-webkit-details-marker { display: none; }
+
+.share-fallback__apps {
+  margin: 1rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem 1.4rem;
+  font-size: .9rem;
+}
+
+.share-fallback__hint {
+  display: block;
+  margin: 1rem 0 .4rem;
+  font-size: .8rem;
+  color: var(--ink-soft);
+}
+
+/* The passage as it will be pasted, in a field rather than as prose, because
+   a field is the one thing a browser lets you select the whole of and copy
+   without a script -- a long press on a phone, ctrl-A on a keyboard. */
+.share-fallback__text {
+  display: block;
+  width: 100%;
+  font: inherit;
+  font-size: .85rem;
+  line-height: 1.55;
+  padding: .7rem .8rem;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  resize: vertical;
+}
 
 /* ---------- notices ---------- */
 
@@ -307,5 +349,5 @@ a:focus-visible, :focus-visible {
 @media print {
   body { background: #fff; color: #000; padding: 0; }
   .card { border: none; box-shadow: none; page-break-inside: avoid; }
-  .eyebrow, .colophon, .toolbar, .share { display: none; }
+  .eyebrow, .colophon, .toolbar, .share, .share-fallback { display: none; }
 }

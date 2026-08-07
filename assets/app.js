@@ -77,12 +77,17 @@
 
      Each card is read at the moment its button is clicked rather than up
      front, so a card the day-swap below has since rewritten shares the
-     reading the reader is actually looking at. */
+     reading the reader is actually looking at.
+
+     The markup carries its own share block for a reader without scripts --
+     mail and message links, and the passage ready to copy. Where this runs,
+     the button below replaces it, so the block is put away rather than left
+     standing as a second copy of the same offer. */
 
   var SHAREABLE = [
-    { button: "share-bom",   text: "bom-text",   credit: "bom-ref",       link: "bom-link" },
-    { button: "share-cfm",   text: "cfm-text",   credit: "cfm-ref",       link: "cfm-link" },
-    { button: "share-quote", text: "quote-text", credit: "quote-speaker", link: "quote-link" }
+    { button: "share-bom",   text: "bom-text",   credit: "bom-ref",       link: "bom-link",   fallback: "share-fallback-bom" },
+    { button: "share-cfm",   text: "cfm-text",   credit: "cfm-ref",       link: "cfm-link",   fallback: "share-fallback-cfm" },
+    { button: "share-quote", text: "quote-text", credit: "quote-speaker", link: "quote-link", fallback: "share-fallback-quote" }
   ];
 
   function textOf(id) {
@@ -145,6 +150,12 @@
     var button = document.getElementById(spec.button);
     if (!button) return;
     button.hidden = false;
+
+    // Only now that the button is up: if this line is never reached the
+    // markup's own share block stays where it is, still working.
+    var fallback = document.getElementById(spec.fallback);
+    if (fallback) fallback.hidden = true;
+
     button.addEventListener("click", function () {
       var payload = passage(spec);
       if (!payload) return;
