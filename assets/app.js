@@ -80,9 +80,9 @@
      reading the reader is actually looking at.
 
      The markup carries its own share block for a reader without scripts --
-     mail and message links, and the passage ready to copy. Where this runs,
-     the button below replaces it, so the block is put away rather than left
-     standing as a second copy of the same offer. */
+     a mail link, and the passage ready to copy. Where this runs, the button
+     below replaces it, so the block is put away rather than left standing as
+     a second copy of the same offer. */
 
   var SHAREABLE = [
     { button: "share-bom",   text: "bom-text",   credit: "bom-ref",       link: "bom-link",   fallback: "share-fallback-bom" },

@@ -677,26 +677,36 @@ def share_block(card: str, subject: str, payload: str) -> str:
     """The share block for a reader whose JavaScript is switched off.
 
     A share sheet and a clipboard are both things only a script can ask for,
-    so this reaches the reader's apps the one way markup can: a mail link and
-    a message link, each already filled in, each handed to whichever app the
-    operating system has registered for it. The page still sends nothing
-    anywhere, and nothing goes anywhere at all until the reader presses send
-    in an app of their own. The text sits underneath them ready to be selected
-    and copied, for wherever else they might want to put it.
+    so this reaches the reader's apps the one way markup can: a mail link,
+    already filled in, handed to whichever app the operating system has
+    registered for it. The page still sends nothing anywhere, and nothing goes
+    anywhere at all until the reader presses send in an app of their own. The
+    text sits underneath it ready to be selected and copied, for wherever else
+    they might want to put it.
+
+    There is deliberately no message link beside it. `sms:` carries a prefilled
+    body by custom only, never by specification -- Apple's own URL scheme
+    reference says the address must not include message text -- and the two
+    platforms disagree about how to introduce it, Android reading `sms:?body=`
+    and iOS `sms:&body=`. `sms:?&body=`, the spelling that tries to satisfy
+    both, is the one a phone that accepts neither shows nothing at all for: the
+    link is pressed and the page just sits there. A link that quietly does
+    nothing is worse than no link on a page that promises to work without
+    scripts, so the field below is the way to a messaging app -- select, copy,
+    paste, and certain of it.
 
     The script hides this block once it has a working Share button, so nobody
     is offered the same thing twice.
     """
-    quoted = urllib.parse.quote(payload, safe="")
-    mail = f"mailto:?subject={urllib.parse.quote(subject, safe='')}&body={quoted}"
-    # A message link is spelled two ways: `sms:?body=` is the standard, and
-    # what Android reads; iOS wants its parameters introduced by an ampersand.
-    # `?&body=` is the spelling both of them accept.
-    sms = f"sms:?&body={quoted}"
+    # RFC 6068 spells a line break in a mail body CRLF, and clients that take
+    # it at its word run the lines together when handed a bare newline. The
+    # field below keeps the plain newlines, which is what a paste wants.
+    body = urllib.parse.quote(payload.replace("\n", "\r\n"), safe="")
+    mail = f"mailto:?subject={urllib.parse.quote(subject, safe='')}&body={body}"
     return f"""<details class="share-fallback" id="share-fallback-{card}">
       <summary>Share</summary>
-      <p class="share-fallback__apps"><a href="{esc(mail)}">Email this</a><a href="{esc(sms)}">Send as a message</a></p>
-      <label class="share-fallback__hint" for="share-payload-{card}">Or copy it from here:</label>
+      <p class="share-fallback__apps"><a href="{esc(mail)}">Email this</a></p>
+      <label class="share-fallback__hint" for="share-payload-{card}">Or copy it, to send it any other way:</label>
       <textarea class="share-fallback__text" id="share-payload-{card}" rows="10" readonly spellcheck="false">{esc(payload)}</textarea>
     </details>"""
 
