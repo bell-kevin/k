@@ -295,17 +295,41 @@ def book_name(slug: str) -> str:
 # source 1 -- Book of Mormon verses
 # --------------------------------------------------------------------------
 
-def is_quotable_verse(text: str) -> bool:
-    """Keep verses that stand on their own when read cold."""
-    if not 90 <= len(text) <= 340:
-        return False
+def reads_as_a_reading(text: str) -> bool:
+    """Whether a verse can stand alone at all, whatever it would score.
+
+    This asks only whether a verse is disqualified outright -- a fragment, a
+    label, a page of bookkeeping. Which of the survivors is worth a day is
+    `verse_score`'s question. Both cards ask this, so both are held to it: the
+    Come, Follow Me card used to apply only a length test, and let through
+    verses like "...which was spoken of the Lord by the prophet, saying,".
+    """
     lowered = text.lower()
     # Skip bare genealogy, chronology and travelogue, which read poorly cold.
     if re.search(r"\bbegat\b|\bthe record of\b|\bplates of\b|\bpitch(ed)? our tents\b"
-                 r"|\bjourney(ed|ing)? in the wilderness\b", lowered):
+                 r"|\bjourney(ed|ing)? in the wilderness\b|\bthe account of\b"
+                 r"|\bthe words? of \w+ which he spake\b", lowered):
         return False
-    # Require some doctrinal substance, and reject dense narrative.
-    return verse_score(text) >= 3.0
+    # The back half of a sentence that started in the verse before.
+    if FRAGMENT_OPENER.match(text):
+        return False
+    # "Who shall ascend into the hill of the Lord?" is a reading; "Who is he
+    # that hideth counsel without knowledge" is a relative clause carrying on.
+    if re.match(r"^who\b", text, re.I) and "?" not in text:
+        return False
+    # A verse that only introduces the speech in the next one.
+    return not SPEECH_STUB.search(text)
+
+
+def is_quotable_verse(text: str) -> bool:
+    """Keep Book of Mormon verses that stand on their own when read cold."""
+    return (90 <= len(text) <= 340 and reads_as_a_reading(text)
+            and verse_score(text) >= VERSE_FLOOR)
+
+
+# The score a verse has to reach to be worth a day at all. Roughly two gospel
+# words and nothing working against it, or one and a note of conviction.
+VERSE_FLOOR = 3.0
 
 
 # How much of the quotable pool the ordinary days draw on. The whole pool is
@@ -370,6 +394,9 @@ def build_bom_tier(pool: list[dict]) -> list[dict]:
     best = sorted(pool, key=lambda v: v["score"], reverse=True)[:BOM_TIER]
     cutoff = best[-1]["score"] if best else 0
     print(f"Book of Mormon: keeping the best {len(best)} (score >= {cutoff:.1f})")
+    # The score got the verse this far and is no reader's business; the Come,
+    # Follow Me card already drops its own before writing the calendar.
+    best = [{k: v for k, v in verse.items() if k != "score"} for verse in best]
     return spread(best, seed=20260101, key=lambda v: v["reference"].rsplit(" ", 1)[0])
 
 
@@ -561,32 +588,242 @@ def parse_verse_ids(query: str) -> list[int]:
     return nums
 
 
-# Words that mark a verse as teaching rather than plot. Come, Follow Me cites
-# whole passages, so a week's citations mix doctrine with narrative connective
-# tissue; scoring lets the better-standing-alone verses win.
+# The vocabulary of the gospel, carried as word *stems* rather than whole
+# words. This list is most of what decides a reading, so what it misses it
+# misses badly, and an earlier list of exact forms missed a great deal:
+# scripture is written in Early Modern English and inflects heavily, so
+# "commandment" matched and "commandments" did not, "repent" matched and
+# "repentance" did not, "redeem" matched and "redeemer" did not. The cost was
+# not a rounding error. "For I know that my redeemer liveth" scored zero and
+# was dropped, while Satan's speech in the same chapter scored 3.5 and was
+# chosen -- so the stems, and the suffixes below, are the foundation the rest
+# of the scoring stands on.
+DOCTRINAL_STEMS = [
+    # deity
+    "lord", "god", "christ", "jesus", "messiah", "savior", "saviour", "redeem",
+    "creator", "almighty", "immanuel", "jehovah",
+    # the first principles
+    "faith", "believ", "repent", "baptiz", "baptism", "gospel", "doctrine",
+    "convert", "forgiv", "remission", "atone", "resurrect", "salvation",
+    "save", "redemption", "exalt", "sanctif", "justif",
+    # covenant and ordinance
+    "covenant", "command", "ordinance", "sacrament", "priesthood", "temple",
+    "endow", "seal", "consecrat", "restor", "keys",
+    # the attributes a reading is usually about
+    "love", "charity", "hope", "mercy", "merci", "grace", "truth", "virtue",
+    "meek", "humbl", "humility", "patien", "diligen", "kind", "compassion",
+    "gentl", "long-suffering", "forbear", "chaste", "pure", "purity", "honest",
+    "integrity", "worthy", "worthi", "holy", "holi", "righteous", "perfect",
+    # the life of a disciple
+    "pray", "worship", "fast", "obey", "obedien", "hearken", "heed", "endure",
+    "enduring", "serve", "servic", "minister", "disciple", "follow",
+    "sacrific", "offering", "tithe", "labor", "labour", "witness", "testif",
+    "testimony", "preach", "teach", "ponder", "remember", "watch", "trust",
+    "rely", "wait", "seek", "knock", "ask",
+    # what is promised
+    "bless", "peace", "peacemak", "joy", "rejoic", "comfort", "heal", "rest",
+    "glory", "glori", "eternal", "everlasting", "immortal", "celestial",
+    "heaven", "paradise", "crown", "inherit", "reward", "promise",
+    # the soul and the spirit
+    "spirit", "soul", "heart", "mind", "conscience", "light", "life", "live",
+    "grateful", "gratitude", "thank", "praise", "prophet", "revelation",
+    "scripture", "word", "angel", "power", "strength", "courage", "fear not",
+]
+
+# The suffixes those stems take. Deliberately narrow: each one turns a stem
+# into another form of the same word, so a match is still the word itself and
+# not a coincidence of spelling.
+_INFLECTION = (r"(?:e|es|s|ies|ed|eth|est|ing|ings|er|ers|ment|ments|ness|"
+               r"ful|fully|ous|ly|y|ance|ence|ion|ions|ity|able)?")
+
+# Longest stem first, so "commandment" is not matched as "command" before the
+# longer stem has been tried.
 DOCTRINAL = re.compile(
-    r"\b(lord|god|christ|jesus|saviour|savior|spirit|faith|love|charity|hope|"
-    r"heart|soul|covenant|commandment|righteous|mercy|merciful|grace|truth|"
-    r"bless|blessed|repent|forgive|holy|glory|redeem|salvation|eternal|"
-    r"everlasting|worship|pray|prayer|humble|peace|joy|light|trust|obey|"
-    r"remember|witness|testimony|thanksgiving|rejoice)\b", re.I)
+    r"\b(" + "|".join(sorted(DOCTRINAL_STEMS, key=len, reverse=True)) + r")"
+    + _INFLECTION + r"\b", re.I)
+
+
+def doctrinal_stems(text: str) -> set[str]:
+    """The distinct gospel words a reading uses, counted by stem.
+
+    By stem, so "commandment" and "commandments" in one verse count once: the
+    score is meant to reward a reading that is *about* something, not one that
+    repeats itself.
+    """
+    return {m.group(1).lower() for m in DOCTRINAL.finditer(text)}
+
 
 NARRATIVE_OPENER = re.compile(
     r"^(nevertheless|so |then |and when|now when|and it came to pass that when|"
-    r"and he sent|and they came|after this|and after|moreover|likewise)\b", re.I)
+    r"and he sent|and they came|and they began|after this|and after|moreover|"
+    r"likewise|now it came to pass|and now when|and thus)\b", re.I)
+
+# A verse that opens with a relative pronoun is the back half of a sentence
+# that began in the verse before it -- "That ye may not be cursed with a sore
+# cursing", "Whom I shall see for myself". No amount of doctrine in the rest of
+# it makes it a reading, so this is a rejection rather than a penalty.
+FRAGMENT_OPENER = re.compile(
+    r"^(?:and|but|now|yea|wherefore|therefore)?[,\s]*(that|which|whom|whose)\b", re.I)
+
+# A verse that only introduces speech -- "Then Job answered and said," -- is
+# the label on the reading, not the reading.
+SPEECH_STUB = re.compile(r"(and )?(said|saying|spake|answered)\s*[:,]\s*$", re.I)
+
+# First-person conviction, which is what a verse is usually remembered for.
+TESTIMONY = re.compile(
+    r"\b(i know that|i do know|we know that|i testif|i bear (?:my |solemn )?"
+    r"(?:record|witness|testimony)|i will trust|will i trust|i will go and do|"
+    r"i glory in|my soul (?:delighteth|hungered)|i am the (?:way|light|life)|"
+    r"i would that ye should)\b", re.I)
+
+# Counsel addressed to the reader, rather than a report of what someone did.
+COUNSEL = re.compile(
+    r"\b(come unto|blessed are|blessed is|blessed art|if ye will|if ye shall|"
+    r"ye must|thou shalt|see that ye|let us|press forward|watch and pray|"
+    r"ask, and|seek, and|knock, and|be ye|deny (?:yourselves|not)|"
+    r"cleave unto|hold (?:fast|to) the)\b", re.I)
+
+# The register of destruction, judgement and lament. These words are not
+# forbidden -- "wickedness never was happiness" is one of the best verses there
+# is -- but a verse thick with them is an account of a battle or a cry of
+# distress, and it lands badly as the one thing someone reads today.
+LAMENT = re.compile(
+    r"\b(destroy|destruction|destroyed|perish|slain|slay|slew|smite|smote|"
+    r"smitten|sword|swords|battle|wars|captivity|bondage|torment|hell|devil|"
+    r"damnation|abomination|abominable|mourn|weep|wept|lament|wo|woe|vex|"
+    r"curse|cursed|cursing|wrath|anger|angry|fierce|death|dying|corrupt|"
+    r"wicked|wickedness|iniquity|iniquities|filthiness|carnal|devour|famine|"
+    r"pestilence|bloodshed|vengeance|torment|afflict|affliction|deprav|brutal|"
+    r"savage|degenerat|hardness|blindness|depravity)\w*",
+    re.I)
+
+# The voice of an accuser or a mocker: a verse that opens by challenging
+# someone, or that tells the reader their faith has been for nothing. This is
+# how the words of Satan and of the unbelieving get quoted as if they were
+# counsel -- they use the vocabulary of the gospel to argue against it.
+ACCUSATION = re.compile(
+    r"^(hast|doth|dost|wilt thou|art thou|why (?:do|hast|art|should)|how long)\b"
+    r"|\b(?:your|thy|ye)\b[^.]{0,60}\b(?:vain|nought|naught)\b", re.I)
+
+# Scripture reports what the proud and the foolish tell themselves by quoting
+# their own thought back at them -- "the fool hath said in his heart, There is
+# no God", "thou hast said in thy heart: I will ascend into heaven". Alone,
+# with the rebuke that follows it left behind in the next verse, the boast is
+# all the reader gets, and it is dressed in the vocabulary of the gospel.
+BOAST = re.compile(
+    r"\b(?:thou|he|she|they|ye|fool)\s+(?:hast|hath|have|had)\s+said\s+in\s+"
+    r"(?:thy|his|her|their|your)\s+heart", re.I)
+
+
+# A complaint to God about what he has done: "he hath destroyed me on every
+# side", "he hath stripped me of my glory". Job's, mostly, and true to the book
+# he is in -- but a reader meeting one of these cold, with nothing either side
+# of it and no answer for another thirty chapters, is left holding it.
+COMPLAINT = re.compile(
+    r"\b(?:he|thou|god|the lord) hath (?:destroyed|stripped|taken|removed|"
+    r"broken|cast|torn|overthrown|compassed|hedged|fenced) me\b"
+    r"|\bhath (?:destroyed|stripped|broken|forsaken) me\b", re.I)
+
+# A verse reporting that people refused what they were taught is *about* them
+# rather than *to* the reader. These are the verses that carry the vocabulary
+# of the gospel while describing its rejection -- "they do set at naught his
+# counsels", "they harden their hearts against it" -- so they score well on
+# words alone and read as an indictment of somebody else.
+REBELLION = re.compile(
+    r"\bthey (?:do not|did not|will not|would not|had not)\b"
+    r"|\bharden(?:ed|eth)? (?:their|his|her|not) heart"
+    r"|\bthey (?:reject|rejected|deny|denied|revile|reviled|mock|mocked|"
+    r"murmur|murmured|rebel|rebelled|dwindle|dwindled|stiffen|stiffened)\b"
+    r"|\bset at naught\b|\bi fear lest\b", re.I)
+
+# Words that are capitalised because they open a sentence or a quotation, not
+# because they name anybody. Counting them as names taxed some of the best
+# verses there are: "Naked came I out of my mother's womb" lost as much ground
+# for "Naked" as a page of genealogy loses for a name.
+SENTENCE_OPENERS = {
+    "behold", "yea", "verily", "wherefore", "therefore", "naked", "blessed",
+    "hearken", "hosanna", "amen", "nay", "nevertheless", "notwithstanding",
+    "hallelujah", "woe", "wo", "awake", "arise", "remember", "repent", "come",
+    "go", "know", "believe", "trust", "fear", "peace", "hear", "listen",
+    "depart", "take", "look", "thus", "now", "and", "but", "for", "oh", "how",
+    "what", "who", "when", "there", "then", "these", "this", "they", "we",
+}
+
+
+def proper_nouns(text: str) -> set[str]:
+    """The names in a reading. Dense ones mean genealogy or a battle account.
+
+    Deity is not counted. "the Lord", "God", "Jesus Christ" are what a verse of
+    the day is most often about, and they are already rewarded as gospel words,
+    so counting them here as well charged a verse for its own subject.
+    """
+    return {word for word in re.findall(r"(?<![.!?]\s)(?<!^)\b[A-Z][a-z]{2,}\b", text)
+            if word.lower() not in SENTENCE_OPENERS and not DOCTRINAL.fullmatch(word)}
 
 
 def verse_score(text: str) -> float:
-    """Rank a cited verse by how well it reads on its own."""
-    score = 2.0 * len(set(m.group(0).lower() for m in DOCTRINAL.finditer(text)))
+    """Rank a verse by how well it reads on its own, cold, as today's reading.
+
+    The question is not whether a verse is important -- every verse is -- but
+    whether it teaches something to someone who reads it with nothing either
+    side of it. So the score rewards what a verse says (gospel vocabulary,
+    conviction, counsel) and penalises what makes it lean on its neighbours
+    (narrative openers, dense names) or land badly alone (lament, accusation,
+    a bare question).
+    """
+    score = 1.6 * len(doctrinal_stems(text))
+    if TESTIMONY.search(text):
+        score += 3.0
+    if COUNSEL.search(text):
+        score += 1.5
     if NARRATIVE_OPENER.match(text):
+        score -= 2.5
+    if ACCUSATION.search(text):
+        score -= 4.0
+    if REBELLION.search(text):
         score -= 3.0
-    # Dense proper nouns usually mean genealogy or a battle account.
-    propers = re.findall(r"(?<![.!?]\s)(?<!^)\b[A-Z][a-z]{2,}\b", text)
-    score -= 0.8 * len(set(propers))
+    if COMPLAINT.search(text):
+        score -= 3.0
+    if BOAST.search(text):
+        score -= 4.0
+    # Thick with destruction or distress. Capped, so a single hard word costs a
+    # verse a little and cannot sink it on its own.
+    score -= min(4.5, 0.9 * len({m.group(0).lower() for m in LAMENT.finditer(text)}))
+    propers = proper_nouns(text)
+    score -= 0.7 * len(propers)
+    # A verse that is nothing but a question asks something the next verse
+    # answers; alone, it leaves the reader holding it.
+    if text.rstrip().endswith("?") and "." not in text:
+        score -= 2.5
+    # A verse running into the next one through its punctuation is usually
+    # finishing there too. A light touch: the King James punctuates complete
+    # sentences this way as well.
+    if text.rstrip().endswith((":", ";")):
+        score -= 0.8
     if 120 <= len(text) <= 300:
+        score += 1.0
+    # Short, whole and nameless: the shape of a verse people quote from memory.
+    if 90 <= len(text) <= 200 and not propers:
         score += 1.5
     return score
+
+
+# What being inside the week's assigned chapters is worth when the week's seven
+# days are chosen. Large enough that an ordinary week is filled from the
+# assignment before any cross-reference is looked at, small enough that a week
+# whose own reading is thin does not spend a day on a verse that says nothing.
+ASSIGNED_BONUS = 6.0
+
+# How many days one chapter may take in a week. Come, Follow Me often links a
+# long consecutive run -- the lesson on Job cites all twenty-seven verses of
+# Job 19 -- and without a cap the week reads as one passage dealt out slowly
+# rather than as a walk through the whole assignment.
+CFM_PER_CHAPTER = 2
+
+# The score a verse needs to be worth one of the week's days. Below this the
+# week simply runs shorter and its readings come round again, which is better
+# than filling the last days with whatever was left.
+CFM_VERSE_FLOOR = 2.5
 
 
 def build_cfm_weeks(manual: str, year: int) -> list[dict]:
@@ -641,6 +878,7 @@ def build_cfm_weeks(manual: str, year: int) -> list[dict]:
                 passage = fetch_passage(path, nums)
                 if passage:
                     passage["rank"] = block_rank(block, mbook, int(mchapter))
+                    passage["book"] = mbook
                     passage["chapter"] = int(mchapter)
                     passage["verse"] = min(nums)
                     mastery.append(passage)
@@ -656,7 +894,7 @@ def build_cfm_weeks(manual: str, year: int) -> list[dict]:
             parsed = parse_verses(chapter["content"]["body"])
             for num in sorted(nums):
                 text = parsed.get(num)
-                if text and 60 <= len(text) <= 400:
+                if text and 60 <= len(text) <= 400 and reads_as_a_reading(text):
                     verses.append({
                         "reference": f"{book_name(book)} {ch}:{num}",
                         "text": text,
@@ -674,18 +912,41 @@ def build_cfm_weeks(manual: str, year: int) -> list[dict]:
         # so a day is not spent on a fragment of what another day quotes whole.
         verses = [v for v in verses if v["key"] not in covered]
 
-        # The week's own chapters come first: they are what is discussed on
-        # Sunday. Come, Follow Me also points at cross-references, and the best
-        # of those are worth a day, but only once the assignment is served.
+        # The week's own chapters are what is discussed on Sunday, so being in
+        # the assignment is worth a great deal -- but as a bonus rather than an
+        # absolute, because some weeks the assignment cannot fill seven days on
+        # its own. The week of Job 1-3; 12-14; 19 is the case that settled it:
+        # ranking every assigned verse above every cross-reference spent three
+        # days of that week on Job 19:2, 19:9 and 19:10 -- "how long will ye vex
+        # my soul", "he hath stripped me of my glory", "he hath destroyed me on
+        # every side" -- while Ether 12:27 and D&C 121:7, which the lesson cites
+        # precisely because they answer Job, waited outside. A bonus keeps the
+        # assignment first in every ordinary week and lets a strong
+        # cross-reference in when the reading itself is a week of lament.
         seen = {m["reference"] for m in mastery}
         ordered = list(mastery)
-        for verse in sorted(verses, key=lambda v: (v["assigned"], v["score"]),
-                            reverse=True):
+        # How many days one chapter may take, so a week cannot spend most of
+        # itself on consecutive verses of a single passage.
+        per_chapter: dict[tuple[str, int], int] = {}
+        for verse in mastery:
+            per_chapter[(verse.get("book", ""), verse.get("chapter", 0))] = 1
+        ranked = sorted(verses, reverse=True,
+                        key=lambda v: v["score"] + (ASSIGNED_BONUS if v["assigned"] else 0))
+        for verse in ranked:
             if len(ordered) >= 7:
                 break
-            if verse["reference"] not in seen:
-                seen.add(verse["reference"])
-                ordered.append(verse)
+            if verse["reference"] in seen:
+                continue
+            chapter_key = (verse["key"][0], verse["key"][1])
+            if per_chapter.get(chapter_key, 0) >= CFM_PER_CHAPTER:
+                continue
+            # A week is better one day short than spent on a verse that does
+            # not read as a reading.
+            if verse["score"] < CFM_VERSE_FLOOR:
+                continue
+            seen.add(verse["reference"])
+            per_chapter[chapter_key] = per_chapter.get(chapter_key, 0) + 1
+            ordered.append(verse)
 
         if not ordered:
             continue
@@ -696,8 +957,8 @@ def build_cfm_weeks(manual: str, year: int) -> list[dict]:
         ordered.sort(key=lambda v: (v.get("rank", 0), v.get("chapter", 0),
                                     v.get("verse", 0)))
         chosen = [{k: v for k, v in verse.items()
-                   if k not in ("assigned", "rank", "chapter", "verse", "score",
-                                "key")}
+                   if k not in ("assigned", "rank", "book", "chapter", "verse",
+                                "score", "key")}
                   for verse in ordered]
 
         # Strip the leading date from the title to get the reading's name.
@@ -904,6 +1165,10 @@ QUOTA = {"prophet": 12, "presidency": 9, "twelve": 7, "other": 3}
 # once.
 QUOTE_FLOOR = 1.0
 
+# ...and the teaching it has to carry before its shape is allowed to count for
+# anything. Roughly two gospel words, or one invitation. See `quote_substance`.
+QUOTE_SUBSTANCE_FLOOR = 2.0
+
 
 def speaker_rank(role: str) -> str:
     for name, pattern in SPEAKER_RANKS:
@@ -926,19 +1191,98 @@ WITNESS = re.compile(
 
 PROMISE = re.compile(
     r"\b(will bless|will come|will help|will strengthen|will guide|promise[sd]?|"
-    r"blessings? (?:of|will|come)|the lord will|god will|he will)\b", re.I)
+    r"blessings? (?:of|will|come)|the lord will|god will)\b", re.I)
+
+# Every talk ends by closing in the name of Jesus Christ, and those closings
+# are the highest-scoring paragraphs in the whole conference: they are dense
+# with gospel words and almost always carry an invitation or a blessing, so the
+# scoring loved them and the per-talk quotas took them first. One in six of the
+# quotes chosen was one.
+#
+# They are not all alike, though, and refusing them outright went too far.
+# Some are nothing but the form of words -- "...is my prayer and my blessing in
+# the holy name of Jesus Christ, amen." Others are a real teaching with the
+# formula added after it, and for a speaker who writes in long paragraphs the
+# closing can be the only thing short enough to quote at all: refusing every
+# one of them cost Elder Walker's talk its every quote, and his testimony that
+# "as we obey the Savior's voice and keep our covenants -- even by small and
+# quiet acts -- we become His peculiar treasure" with it. So a closing is
+# judged on what it says with the formula set aside, and those that survive are
+# ranked below everything else in their talk rather than above it.
+BENEDICTION = re.compile(r"\bamen\b\W*$", re.I)
 
 
-def quote_score(text: str) -> float:
-    """Rank a paragraph by how much teaching it carries on its own."""
-    score = 0.0
-    score += 1.2 * len(set(m.group(0).lower() for m in DOCTRINAL.finditer(text)))
+def benediction_core(text: str) -> str:
+    """A closing paragraph with its formula dropped, for judging it.
+
+    For judging only -- never for publishing. Every quote on the site is the
+    paragraph as it was given, linked to the place it was given, so what is cut
+    here is cut to weigh the paragraph and then thrown away.
+    """
+    sentences = re.split(r"(?<=[.!?])\s+", text.strip())
+    while sentences and re.search(r"\bamen\b", sentences[-1], re.I):
+        sentences.pop()
+    return " ".join(sentences).strip()
+
+# A paragraph about the talk it is in -- what the speaker will cover, what will
+# appear in the published version, what is left of their time. It reads as
+# housekeeping anywhere but in its place.
+#
+# The greeting a talk opens with belongs here too. It is the counterpart of the
+# closing formula: "I am humbled by the privilege to speak to you", "I pray
+# that the Spirit will be with you and with me". Unlike a closing there is
+# rarely a teaching inside one to salvage, so these are simply refused -- and
+# every speaker who opened this way had a good deal else to say.
+SELF_REFERENTIAL = re.compile(
+    r"\b((?:privilege|honor|honour|opportunity) (?:to|of) (?:speak|address)|"
+    r"i (?:am|[’']m) (?:humbled|grateful|honored|honoured) to "
+    r"(?:be with you|speak|stand|address)|"
+    r"i pray that the (?:spirit|holy ghost)[^.]{0,60}(?:be with|with you)|"
+    r"my (?:message|remarks|talk|address)\b|published version|"
+    r"i (?:will|would like to|want to|have chosen to|have decided to|should like to)"
+    r" (?:speak|address|talk|share)|"
+    r"i will (?:mention|discuss|suggest|offer|consider) (?:three|two|four|five|"
+    r"six|a few|several)|"
+    r"as i (?:conclude|close|begin)|in the time (?:i have|that remains|remaining)|"
+    r"i have been asked to speak|in my (?:message|remarks|talk))\b", re.I)
+
+# "Second, the question is asked ..." picks up a list begun several paragraphs
+# earlier, and says nothing on its own.
+ENUMERATION = re.compile(
+    r"^(first|second|third|fourth|fifth|sixth|seventh|next|finally|lastly|"
+    r"number \w+)\b\s*[,:]", re.I)
+
+# The furniture of a session rather than the preaching in it.
+HOUSEKEEPING = re.compile(
+    r"\b(the choir|we have just (?:heard|sung)|welcome to this|welcome you to|"
+    r"we are grateful to (?:be|have)|this morning'?s session|"
+    r"the closing (?:prayer|hymn)|will now be|please be seated)\b", re.I)
+
+
+def quote_substance(text: str) -> float:
+    """What a paragraph actually says, with the presentational bonuses left out.
+
+    `quote_score` also rewards a paragraph for being a convenient length, and
+    it has to: of two paragraphs that teach equally well, the shorter is the
+    better quote. But a bonus for being the right *shape* was enough to clear
+    the floor on its own, so paragraphs that said nothing whatsoever -- an
+    airline's baggage handling, a family dog named Lady -- qualified on length
+    and went into the calendar. Substance is measured separately so that having
+    something to say can be required before shape is rewarded.
+    """
+    score = 1.2 * len(doctrinal_stems(text))
     if INVITATION.search(text):
         score += 3.5
     if WITNESS.search(text):
         score += 4.0
     if PROMISE.search(text):
         score += 2.0
+    return score
+
+
+def quote_score(text: str) -> float:
+    """Rank a paragraph by how much teaching it carries on its own."""
+    score = quote_substance(text)
     # A quote has to be short enough to be carried away in one reading.
     if 130 <= len(text) <= 260:
         score += 2.5
@@ -946,7 +1290,7 @@ def quote_score(text: str) -> float:
         score -= 1.5
     # Numbers and dense proper nouns mean a report or an anecdote, not counsel.
     score -= 1.5 * len(re.findall(r"\b\d{2,}\b|\bpercent\b", text))
-    score -= 0.5 * len(set(re.findall(r"(?<![.!?]\s)(?<!^)\b[A-Z][a-z]{2,}\b", text)))
+    score -= 0.5 * len(proper_nouns(text))
     # A paragraph that is only questions sets something up rather than saying it.
     if text.count("?") >= 2 and "." not in text:
         score -= 2.5
@@ -967,6 +1311,18 @@ def is_quotable_paragraph(text: str) -> bool:
         return False
     if not text.endswith((".", "!", "?", '."', '!"', '?"')):
         return False
+    if HOUSEKEEPING.search(text):
+        return False
+    # A closing that is nothing but the form of words. One that still teaches
+    # something with the formula set aside is kept, and ranked last in its talk.
+    if BENEDICTION.search(text):
+        core = benediction_core(text)
+        if len(core) < 90 or quote_substance(core) < QUOTE_SUBSTANCE_FLOOR:
+            return False
+    # A paragraph about the talk it sits in, or one carrying on a list begun
+    # several paragraphs earlier.
+    if SELF_REFERENTIAL.search(text) or ENUMERATION.match(text):
+        return False
     # Skip paragraphs that only make sense next to the one before them, and
     # scene-setting narration that is not a teaching.
     if re.match(r"^(But|So|Then|Yet|However|That|This|These|Those|It was|"
@@ -981,7 +1337,9 @@ def is_quotable_paragraph(text: str) -> bool:
     # phrased in it -- "I have learned", "He suffered", "I promised".
     if re.search(r"\b(I|we|he|she|they)\s+(was|were|had|sought|went|came|"
                  r"told|said|saw|felt|knew|gave|took|found|began|met|left|"
-                 r"heard|spoke|wrote|sat|stood)\b", text[:120], re.I):
+                 r"heard|spoke|wrote|sat|stood|witnessed|watched|looked|"
+                 r"visited|attended|arrived|returned|recalled|noticed)\b",
+                 text[:120], re.I):
         return False
     # Academic asides and dangling half-quotations.
     if "(see " in text or "(compare" in text:
@@ -1039,7 +1397,9 @@ def build_quote_pool(count: int = 1) -> list[dict]:
             candidates = []
             for pid, raw in paragraphs:
                 text = clean(raw)
-                if is_quotable_paragraph(text) and quote_score(text) >= QUOTE_FLOOR:
+                if (is_quotable_paragraph(text)
+                        and quote_substance(text) >= QUOTE_SUBSTANCE_FLOOR
+                        and quote_score(text) >= QUOTE_FLOOR):
                     candidates.append({
                         "text": text,
                         "speaker": speaker,
@@ -1049,13 +1409,18 @@ def build_quote_pool(count: int = 1) -> list[dict]:
                         "url": f"https://www.churchofjesuschrist.org/study{uri}"
                                f"?lang=eng&id={pid}#{pid}",
                         "score": quote_score(text),
+                        "closing": bool(BENEDICTION.search(text)),
                     })
 
             # Only the best of a talk, and how many depends on whose talk it is.
             # Every quota is several deep, so a talk with anything above the
             # floor is heard from -- no speaker who stood at that pulpit and
             # taught goes unquoted, however the scoring happened to fall.
-            candidates.sort(key=lambda q: q["score"], reverse=True)
+            #
+            # A closing sorts below every other paragraph however it scored, so
+            # a talk with anything else to offer is never quoted by its last
+            # line -- and one with nothing else still gets its turn.
+            candidates.sort(key=lambda q: (q["closing"], -q["score"]))
             for quote in candidates[:QUOTA[rank]]:
                 found.append((uri, quote))
 
@@ -1065,7 +1430,12 @@ def build_quote_pool(count: int = 1) -> list[dict]:
         photos = fetch_portraits(quoted)
         for uri, quote in found:
             quote["image"] = photos.get(uri, "")
-            pool.append(quote)
+            # The score and the speaker's role decided which paragraphs got
+            # here and how many; neither is rendered, and the calendar repeats
+            # a quote's object on every day it falls on, so they are dropped
+            # rather than shipped 730 times over.
+            pool.append({k: v for k, v in quote.items()
+                         if k not in ("score", "role", "closing")})
 
     if skipped:
         print(f"General Conference: skipped {len(set(skipped))} items of "
