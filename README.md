@@ -72,27 +72,75 @@ All 239 chapters are fetched — 6,604 verses — and each one is asked two
 questions.
 
 **Can it stand alone at all?** A verse is dropped if it is shorter than about a
-sentence or longer than a comfortable card (90–340 characters), or if it is
-plainly bookkeeping: `begat`, `the record of`, `the plates of`, pitching tents,
-journeying in the wilderness.
+sentence or longer than a comfortable card (90–340 characters), if it is
+plainly bookkeeping — `begat`, `the record of`, `the plates of`, pitching tents,
+journeying in the wilderness — or if it is not a whole thought to begin with:
 
-**How well does it stand alone?** What survives is scored:
+- a verse opening on a relative pronoun — *That ye may not be cursed with a
+  sore cursing…*, *Whom I shall see for myself…* — is the back half of a
+  sentence that began in the verse before, and no amount of doctrine in the
+  rest of it makes it a reading;
+- a verse that only introduces the speech in the next one — *Then Job answered
+  and said,* — is the label, not the reading.
 
-- **+2 for each distinct doctrinal word** it uses — *lord, faith, charity,
-  covenant, mercy, repent, witness, rejoice* and about forty more. Distinct, so
-  a verse saying "faith" six times counts once for it; the score rewards a verse
-  that is *about* something, not one that repeats a word.
-- **−3 for a narrative opener** — *Nevertheless…*, *And when…*, *And they
-  came…*. A verse that begins by picking up the thread of the last one needs
+**How well does it stand alone?** What survives is scored.
+
+The vocabulary is the foundation: **+1.6 for each distinct gospel word**,
+counted by *stem*, so "commandment" and "commandments" in one verse count once
+— the score rewards a verse that is *about* something, not one that repeats a
+word. Stems matter more than they sound. An earlier list of whole words matched
+*commandment* and missed *commandments*, matched *repent* and missed
+*repentance*, matched *redeem* and missed *redeemer*; and since this count was
+most of what decided a verse, what the list missed it decided wrongly. "For I
+know that my redeemer liveth" scored **zero** and was dropped, while Satan's
+speech eighteen chapters earlier — "Hast not thou made an hedge about him" —
+scored 3.5 on the strength of one *blessed*, and was chosen.
+
+On top of the vocabulary:
+
+- **+3 for a note of conviction** — *I know that*, *I will trust*, *I would
+  that ye should*.
+- **+1.5 for counsel addressed to the reader** — *come unto*, *blessed are*,
+  *if ye will*, *press forward*.
+- **+1.5 for the shape of a verse people quote from memory**: short, whole,
+  and with nobody named in it.
+- **+1 for landing in the comfortable range** of 120–300 characters.
+
+And against it:
+
+- **−2.5 for a narrative opener** — *Nevertheless…*, *And when…*, *And they
+  began…*. A verse that begins by picking up the thread of the last one needs
   the last one.
-- **−0.8 for each distinct proper noun** after the first word. Dense names mean
-  genealogy or a battle account.
-- **+1.5 for landing in the comfortable range** of 120–300 characters.
+- **−4 for the voice of an accuser** — a verse that opens by challenging
+  somebody, or that tells the reader their faith has been in vain. This is how
+  the words of Satan and of the mockers came to be quoted as counsel: they use
+  the vocabulary of the gospel to argue against it, so vocabulary alone cannot
+  tell them apart from it.
+- **−4 for a boast reported as inner speech** — *thou hast said in thy heart:
+  I will ascend into heaven*. Scripture quotes the proud in order to answer
+  them in the next verse, which a reader meeting the boast alone never reaches.
+- **−3 for a report of people refusing what they were taught** — *they do set
+  at naught his counsels*, *they harden their hearts against it*. A verse like
+  that is *about* somebody rather than *to* the reader.
+- **−3 for a complaint to God about what he has done** — *he hath destroyed me
+  on every side*, *he hath stripped me of my glory*. Job's, mostly, and true to
+  the book he is in, but his answer is thirty chapters away.
+- **−0.9 for each distinct word of destruction or distress**, capped, so one
+  hard word costs a verse a little and cannot sink it on its own: *wickedness
+  never was happiness* is one of the best verses there is.
+- **−0.7 for each distinct proper noun**. Dense names mean genealogy or a
+  battle account. Deity is not counted — *the Lord*, *God*, *Jesus Christ* are
+  what a verse of the day is most often about, so counting them charged a verse
+  for its own subject — and neither are words capitalised only because they
+  open a sentence, which used to tax "Naked came I out of my mother's womb" as
+  heavily as a page of genealogy.
+- **−2.5 for a verse that is nothing but a question**, which the verse after it
+  answers and the reader is left holding.
 
-A verse needs 3.0 to be quotable at all. **1,299 of the 6,604 clear that bar**,
-which is more than three years of reading and takes in a lot that merely
+A verse needs 3.0 to be quotable at all. **2,131 of the 6,604 clear that bar**,
+which is more than five years of reading and takes in a lot that merely
 scraped through, so the ordinary days draw on **the best 500** instead (the last
-build's cutoff was 4.7). Five hundred is chosen deliberately: it is more than a
+build's cutoff was 7.1). Five hundred is chosen deliberately: it is more than a
 year, so a reader is never shown a repeat inside their first year, and it still
 turns over enough that a second year is not a rerun of the first.
 
@@ -135,15 +183,42 @@ The week's seven readings are then filled in this order:
    not the lesson page happens to hyperlink those particular verses.
 2. **The verses the lesson page actually links** — every scripture hyperlink in
    the week's body is read for the verse numbers in its `id=` parameter, which
-   is how the page marks exactly what it is pointing at. Those are sorted with
-   **the week's own assigned chapters first**, since they are what is discussed
-   on Sunday, and within each group by the same standing-alone score the Book of
-   Mormon card uses. Come, Follow Me also points at cross-references, and the
-   best of those are worth a day — but only once the assignment is served.
+   is how the page marks exactly what it is pointing at. Those are ranked by
+   the same standing-alone score the Book of Mormon card uses, plus **a bonus
+   of 6 for sitting inside the week's own assigned chapters**, since those are
+   what is discussed on Sunday. Come, Follow Me also points at cross-references,
+   and the best of those are worth a day.
+
+The assignment is a **bonus rather than an absolute**, and the week of `Job
+1–3; 12–14; 19; 21–24; 38–40; 42` is the week that settled it. Ranking every
+assigned verse above every cross-reference spent three days of that week on Job
+19:2, 19:9 and 19:10 — *how long will ye vex my soul*, *he hath stripped me of
+my glory*, *he hath destroyed me on every side* — while Ether 12:27 and D&C
+121:7, which the lesson cites precisely because they answer Job, waited
+outside. A bonus keeps the assignment first in every ordinary week and lets a
+strong cross-reference in when the reading itself is a week of lament.
+
+Two more rules keep a week from collapsing onto one passage:
+
+- **No more than two days from any one chapter.** Come, Follow Me often links a
+  long consecutive run — the lesson on Job cites all twenty-seven verses of Job
+  19 — and without a cap the week reads as a single passage dealt out slowly
+  rather than as a walk through the whole assignment.
+- **A verse must score 2.5 to be worth a day at all.** Below that the week
+  simply runs shorter and its readings come round again, which is better than
+  filling the last days with whatever was left.
 
 Verses already inside a mastery passage placed that week are dropped, so a day
 is not spent on a fragment of what another day quotes whole. Verses outside
-60–400 characters are dropped as too slight or too long for the card.
+60–400 characters are dropped as too slight or too long for the card, and the
+structural tests the Book of Mormon card applies are applied here too — this
+card used to check only the length, and let through readings like *…which was
+spoken of the Lord by the prophet, saying,*.
+
+The Job week now opens on Job 1:1 and 1:21, passes through *though he slay me,
+yet will I trust in him*, and arrives at **Job 19:25 — "For I know that my
+redeemer liveth"**, which under the old scoring was not merely passed over but
+scored zero.
 
 Once the seven are picked they are **put back into the order the assignment
 runs**, so the week walks through the reading in sequence and arrives at church
@@ -183,7 +258,18 @@ that only makes sense next to the paragraph before it:
   throws out the counsel that is phrased in it: *I have learned*, *I promised*;
 - a dangling half-quotation — an odd number of quotation marks, or a paragraph
   that opens inside one;
-- an academic aside — anything carrying `(see …)` or `(compare …)`.
+- an academic aside — anything carrying `(see …)` or `(compare …)`;
+- a list picked up several paragraphs later — *Second, the question is
+  asked…* — which says nothing on its own;
+- a paragraph about the talk it sits in: what the speaker will cover, what will
+  appear in *the published version of my message*, what is left of their time.
+  It reads as housekeeping anywhere but in its place;
+- the greeting a talk opens with — *I am humbled by the privilege to speak to
+  you*, *I pray that the Spirit will be with you and with me*. This is the
+  counterpart of the closing formula below, but unlike a closing there is
+  rarely a teaching inside one to salvage, so it is simply refused;
+- the furniture of a session rather than the preaching in it — *the choir*,
+  *we have just heard*, *welcome to this*.
 
 **How much teaching does it carry?** What survives is scored on the turns of
 phrase a talk is actually remembered by:
@@ -194,7 +280,8 @@ phrase a talk is actually remembered by:
   *may we*, *consider*, *begin today*;
 - **+2 for a promise** — *the Lord will*, *will bless*, *will strengthen*,
   *blessings of*;
-- **+1.2 for each distinct doctrinal word**, as with the verses;
+- **+1.2 for each distinct doctrinal word**, counted by stem as with the
+  verses, so *covenant* and *covenants* count once between them;
 - **+2.5 for being short enough to carry away** in one reading (130–260
   characters), **−1.5 for running past 300**;
 - **−1.5 for every statistic** — a number of two digits or more, or the word
@@ -202,6 +289,36 @@ phrase a talk is actually remembered by:
   anecdote, not counsel;
 - **−2.5 for a paragraph that is nothing but questions**, which sets something
   up rather than saying it.
+
+**Being the right shape is not enough on its own.** The bonus for landing in
+that comfortable 130–260 characters was, by itself, more than the floor a
+paragraph had to clear — so paragraphs that said nothing whatsoever qualified
+on length and went into the calendar. An airline's baggage handling: *"Fragile
+items such as musical instruments are often hand-delivered to passengers."* A
+family dog: *"Years ago our family had a little black dog, a toy poodle named
+Lady."* Both cleared the bar with no gospel word in them at all. So what a
+paragraph *says* is now measured separately from how it is shaped, and it has
+to carry some teaching — roughly two gospel words, or one invitation — before
+its shape counts for anything.
+
+**A talk's closing is not its best line.** Every talk ends in the name of Jesus
+Christ, and those closings were the highest-scoring paragraphs of the whole
+conference: dense with gospel words, almost always carrying an invitation or a
+blessing. The scoring loved them and the quotas took them first, so **one in
+six of every quote chosen was a benediction** — *"…is my prayer and my blessing
+in the holy name of Jesus Christ, amen."*
+
+Refusing all of them went too far, though. Some are nothing but the form of
+words; others are a real teaching with the formula added after, and for a
+speaker who writes in long paragraphs the closing may be the only thing short
+enough to quote at all. Refusing every one of them cost Elder Walker's talk its
+every quote, and his testimony that *"as we obey the Savior's voice and keep
+our covenants — even by small and quiet sacrifices each day — we will feel His
+love more deeply"* with it. So a closing is judged on what it says with the
+formula set aside — which is done to weigh it, never to publish it, since every
+quote here is the paragraph as it was given — and those that survive are ranked
+**below everything else in their talk**. A talk with anything else to offer is
+never quoted by its last line; a talk with nothing else still gets its turn.
 
 **How many of a talk's best paragraphs are taken depends on who gave it.** The
 prophet speaks to the whole Church a handful of times a year and those talks are
@@ -219,8 +336,8 @@ that a strong quote comes round twice in six months than that one of those runs
 once.
 
 The pool is then shuffled and spread by speaker, so the same voice does not turn
-up two days running. **The April 2026 conference yields 123 quotes from 33 talks
-by 31 speakers**, so a quote comes round again about every four months. Raise
+up two days running. **The April 2026 conference yields 133 quotes from 34 talks
+by 32 speakers**, so a quote comes round again about every four months. Raise
 `--conferences` if you would rather trade freshness for variety.
 
 ### The same date always gives the same reading
@@ -303,7 +420,7 @@ from a `file://` URL.
 
 The image URLs are IIIF, so the builder asks for the width it actually serves
 (480px, sharp at the card's 240px on a 2x display) rather than taking whatever
-size the page happened to link. That is currently 33 files and about 800 KB —
+size the page happened to link. That is currently 34 files and about 770 KB —
 one photo per talk that contributed a quote, fetched once and skipped on later
 builds since a talk's photo never changes. A talk whose every paragraph was
 filtered out can never be shown, so its photo is never downloaded. When a new
