@@ -12,6 +12,14 @@ A plain website that shows, every day:
 
 No app, no account, no sign-in. Open the page and read it.
 
+**Contents** — [Why this exists](#why-this-exists) · [What is in here](#what-is-in-here) ·
+[How the readings are chosen](#how-the-readings-are-chosen) ·
+[How it keeps itself current](#how-it-keeps-itself-current) ·
+[Light and dark](#light-and-dark) · [Sharing a card](#sharing-a-card) ·
+[It works with JavaScript switched off](#it-works-with-javascript-switched-off) ·
+[Running it yourself](#running-it-yourself) ·
+[Licensing](#licensing-and-what-the-licence-does-not-cover)
+
 ## Why this exists
 
 The Church publishes a Verse of the Day and a Quote of the Day, but they are
@@ -29,23 +37,210 @@ The picks are therefore *not* the Church's official daily selections. The
 Come, Follow Me verse does follow the same weekly curriculum the Gospel Library
 verse is drawn from, so it stays in step with what wards are studying.
 
-## How it works
+## What is in here
 
-`tools/build_daily.py` reads three public sources through the study API:
-
-| Card | Source |
+| Path | What it is |
 | --- | --- |
-| Book of Mormon verse | All 239 Book of Mormon chapters |
-| Come, Follow Me verse | The weekly manuals covering the calendar, using the verses each week actually cites |
-| Conference quote | The most recent General Conference whose talks are published, with the speaker's photo from that talk |
+| `index.html` | The site. **Generated** — edit `tools/template.html`, not this. |
+| `tools/build_daily.py` | The builder: fetches, chooses, writes the calendar, renders the page. |
+| `tools/template.html` | The page itself, with placeholders where the day's readings go. |
+| `data/daily.json` | The prebuilt calendar — two years of daily picks, about 1 MB. |
+| `assets/app.js` | The enhancement script: theme, share, and correcting the day. |
+| `assets/style.css` | The styling. |
+| `assets/speakers/` | Speaker photos, downloaded at build time and committed. |
+| `.github/workflows/deploy.yml` | The scheduled builds and the Pages deployment. |
+| `.cache/` | Memoised API responses. Not served, not committed; safe to delete. |
 
-It filters each pool for passages that read well on their own — dropping
-genealogy, travelogue, mid-story narration and endnote bibliographies — then
-writes a prebuilt calendar of daily picks to `data/daily.json`.
+The whole builder is one standard-library Python file, so CI installs nothing.
 
-Each day's pick is indexed from a fixed epoch rather than from whenever the
-calendar was last built, so a given date always resolves to the same verse and a
-rebuild part-way through the day does not change it under the reader.
+## How the readings are chosen
+
+`tools/build_daily.py` reads three public sources through the study API, decides
+what each day of the next two years should show, and writes the result to
+`data/daily.json`. The page is then rendered from that calendar with the current
+day's readings already in the markup.
+
+The problem each card solves is the same one: **most verses and most paragraphs
+do not stand on their own.** A verse of a genealogy, or a paragraph that begins
+"But she had not told him yet", is fine where it sits and useless as the one
+thing someone reads today. So each source is filtered down to what reads well
+cold, and then ranked, and the ranking is what the calendar is dealt from.
+
+### The Book of Mormon verse
+
+All 239 chapters are fetched — 6,604 verses — and each one is asked two
+questions.
+
+**Can it stand alone at all?** A verse is dropped if it is shorter than about a
+sentence or longer than a comfortable card (90–340 characters), or if it is
+plainly bookkeeping: `begat`, `the record of`, `the plates of`, pitching tents,
+journeying in the wilderness.
+
+**How well does it stand alone?** What survives is scored:
+
+- **+2 for each distinct doctrinal word** it uses — *lord, faith, charity,
+  covenant, mercy, repent, witness, rejoice* and about forty more. Distinct, so
+  a verse saying "faith" six times counts once for it; the score rewards a verse
+  that is *about* something, not one that repeats a word.
+- **−3 for a narrative opener** — *Nevertheless…*, *And when…*, *And they
+  came…*. A verse that begins by picking up the thread of the last one needs
+  the last one.
+- **−0.8 for each distinct proper noun** after the first word. Dense names mean
+  genealogy or a battle account.
+- **+1.5 for landing in the comfortable range** of 120–300 characters.
+
+A verse needs 3.0 to be quotable at all. **1,299 of the 6,604 clear that bar**,
+which is more than three years of reading and takes in a lot that merely
+scraped through, so the ordinary days draw on **the best 500** instead (the last
+build's cutoff was 4.7). Five hundred is chosen deliberately: it is more than a
+year, so a reader is never shown a repeat inside their first year, and it still
+turns over enough that a second year is not a rerun of the first.
+
+Those 500 are shuffled with a fixed seed and then **dealt out round-robin by
+book**, so consecutive days come from different places rather than marching
+through Alma for a fortnight.
+
+**Every fourteenth day is a scripture mastery passage instead.** The Church's
+seminary programme names a hundred passages students are asked to know,
+twenty-five from each standard work; they are the settled answer to "which
+verses matter most", arrived at by people whose job was to decide it, so the
+list is carried in the builder as fact rather than guessed at by the scoring
+above. Twenty-five of them are from the Book of Mormon, and one comes round
+every fourteen days — twenty-six turns a year for twenty-five passages, so each
+is seen once a year and the extra turn walks the cycle forward, keeping a
+passage off the same date two years running.
+
+A mastery passage is quoted **whole**: every verse of it, joined into one
+reading under one reference. Moroni 7:45's list of what charity is only lands
+with 7:47's "charity is the pure love of Christ" after it, so it is not split
+across days. Those verses are also removed from the ordinary pool, so you are
+never shown a fragment of a passage a few days after seeing the passage.
+
+### The Come, Follow Me verse
+
+The week's page is what decides this card, and each week gets **up to seven
+readings — one per day, Monday through Sunday.**
+
+A week's title carries both things needed: `January 4–10. "We Have Come to
+Worship Him": Matthew 2; Luke 2`. The dates before the first period give the
+week's span; everything after the last colon is **the assignment**, parsed down
+to a list of chapters (including forms like `1 and 2 Thessalonians` or `1–3
+John`, which name no chapters and mean all of each).
+
+The week's seven readings are then filled in this order:
+
+1. **Any scripture mastery passage inside the week's assigned chapters**, quoted
+   whole. That passage is the one a reader is likeliest to be asked about, and a
+   given week only comes round once every four years, so it goes in whether or
+   not the lesson page happens to hyperlink those particular verses.
+2. **The verses the lesson page actually links** — every scripture hyperlink in
+   the week's body is read for the verse numbers in its `id=` parameter, which
+   is how the page marks exactly what it is pointing at. Those are sorted with
+   **the week's own assigned chapters first**, since they are what is discussed
+   on Sunday, and within each group by the same standing-alone score the Book of
+   Mormon card uses. Come, Follow Me also points at cross-references, and the
+   best of those are worth a day — but only once the assignment is served.
+
+Verses already inside a mastery passage placed that week are dropped, so a day
+is not spent on a fragment of what another day quotes whole. Verses outside
+60–400 characters are dropped as too slight or too long for the card.
+
+Once the seven are picked they are **put back into the order the assignment
+runs**, so the week walks through the reading in sequence and arrives at church
+on Sunday having read it, rather than meeting it in a jumble. At the last build
+every one of the calendar's 76 full weeks got its seven.
+
+If a week's title cannot be parsed the builder treats that as *no opinion*
+rather than *nothing assigned*, and takes the week's citations at face value —
+better a card chosen a little less well than an empty one.
+
+### The General Conference quote
+
+The most recent conference whose talks are published is used (see
+[below](#following-general-conference-automatically) for how that is decided).
+
+**Church business is dropped first.** Conference is more than preaching:
+officers are sustained, the audit is read, a solemn assembly is called. "We
+invite the Quorum of the Twelve Apostles please to stand" is not a quote of the
+day, so those items are left out of the pool entirely — recognised by their
+titles, by an author line reading "Presented by" instead of "By", and by roles
+like *auditing* or *managing director*.
+
+Each remaining talk is read down to its endnotes — those are bibliography lines,
+not anything worth quoting — and each paragraph is asked the same two questions
+the verses are.
+
+**Can it stand alone at all?** A paragraph is dropped if it is outside 90–420
+characters, if it does not end in a full stop, or if it is one of the things
+that only makes sense next to the paragraph before it:
+
+- an opener that continues a thought — *But…*, *So…*, *However…*, *That…*,
+  *He…*, *They…*, *I was…*, *After…*;
+- an adverb opener — *Tragically,…* almost always continues a story;
+- storytelling rather than counsel, spotted by a subject-and-past-tense-verb
+  pair in the opening — *he told*, *we went*, *I felt*, *she saw*. The verbs are
+  named one by one rather than matched as any past tense, because "-ed" alone
+  throws out the counsel that is phrased in it: *I have learned*, *I promised*;
+- a dangling half-quotation — an odd number of quotation marks, or a paragraph
+  that opens inside one;
+- an academic aside — anything carrying `(see …)` or `(compare …)`.
+
+**How much teaching does it carry?** What survives is scored on the turns of
+phrase a talk is actually remembered by:
+
+- **+4 for a witness** — *I testify*, *I bear solemn witness*, *I know that*,
+  *I declare*;
+- **+3.5 for an invitation** — *I invite*, *I plead*, *I urge*, *my prayer*,
+  *may we*, *consider*, *begin today*;
+- **+2 for a promise** — *the Lord will*, *will bless*, *will strengthen*,
+  *blessings of*;
+- **+1.2 for each distinct doctrinal word**, as with the verses;
+- **+2.5 for being short enough to carry away** in one reading (130–260
+  characters), **−1.5 for running past 300**;
+- **−1.5 for every statistic** — a number of two digits or more, or the word
+  *percent* — and **−0.5 for each distinct proper noun**: a report or an
+  anecdote, not counsel;
+- **−2.5 for a paragraph that is nothing but questions**, which sets something
+  up rather than saying it.
+
+**How many of a talk's best paragraphs are taken depends on who gave it.** The
+prophet speaks to the whole Church a handful of times a year and those talks are
+the ones members return to, so his talk gives up to **12**; a counselor in the
+First Presidency **9**; a member of the Quorum of the Twelve **7**; everyone
+else **3**. Every quota is several deep, so any talk with something to say is
+heard from — no speaker who stood at that pulpit and taught goes unquoted,
+however the scoring happened to fall.
+
+A floor of 1.0 applies before any quota does, and it matters more than it looks:
+a session's opening and closing are talks like any other to the filters above,
+and without a floor their housekeeping — "welcome to general conference", "the
+choir has just sung" — is exactly what a quota reaches down and takes. Better
+that a strong quote comes round twice in six months than that one of those runs
+once.
+
+The pool is then shuffled and spread by speaker, so the same voice does not turn
+up two days running. **The April 2026 conference yields 123 quotes from 33 talks
+by 31 speakers**, so a quote comes round again about every four months. Raise
+`--conferences` if you would rather trade freshness for variety.
+
+### The same date always gives the same reading
+
+Every day's pick is indexed from a **fixed epoch** — 1 January 2026 — rather
+than from whenever the calendar was last built. A given date resolves to the
+same reading no matter what span a build happens to cover, so a rebuild
+part-way through the day never changes the verse under a reader who has already
+seen it.
+
+The mastery cadence is worked out the same way, from the date's distance from
+the epoch rather than from a running count, and the ordinary days are numbered
+with the mastery days taken out, so the curated tier is walked straight through
+rather than skipping an entry every fortnight.
+
+Scripture does not change, so the Book of Mormon calendar is stable for good.
+The conference pool is stable until a new conference replaces it — which is the
+point of it, and the one place a date's quote is expected to move.
+
+## How it keeps itself current
 
 ### Following the Come, Follow Me curriculum automatically
 
@@ -69,6 +264,10 @@ Because manuals tile contiguously — the 2026 manual ends December 27 and the
 the January changeover. The builder covers two years by default (`--cfm-years`),
 so next year's manual is already in the calendar long before it is needed.
 
+Days past the last published manual simply have no Come, Follow Me card; it is
+hidden rather than shown empty, and appears again as soon as a manual covering
+those days is published and picked up.
+
 ### Following General Conference automatically
 
 Conference is held early in April and early in October, and the talks are posted
@@ -79,11 +278,12 @@ to quote, and only one of them is a date:
 - only the site can say whether its text is up **yet**.
 
 So the builder walks candidate sessions newest-first and takes the first one
-that actually returns a full set of talks — treating a session as unavailable
-while it 404s or is still going up, rather than assuming a fixed publication
-lag. Between conference weekend and the talks appearing, it simply keeps quoting
-the previous conference; the changeover then happens on its own within a few
-days, with no date to keep in step by hand.
+that actually returns a full set of talks — at least 20, so a half-posted
+conference is not chosen while it is still going up. A session that 404s or is
+still appearing is treated as unavailable rather than assumed to arrive on a
+fixed publication lag. Between conference weekend and the talks appearing, it
+simply keeps quoting the previous conference; the changeover then happens on its
+own within a few days, with no date to keep in step by hand.
 
 The refetch runs Mondays and Thursdays, which bounds how long after publication
 a new conference takes to show up.
@@ -103,10 +303,12 @@ from a `file://` URL.
 
 The image URLs are IIIF, so the builder asks for the width it actually serves
 (480px, sharp at the card's 240px on a 2x display) rather than taking whatever
-size the page happened to link. That is about 35 files and 800 KB — one photo
-per talk that contributed a quote, fetched once and skipped on later builds
-since a talk's photo never changes. When a new conference takes over the pool,
-photos no longer reachable from the calendar are pruned in the same run.
+size the page happened to link. That is currently 33 files and about 800 KB —
+one photo per talk that contributed a quote, fetched once and skipped on later
+builds since a talk's photo never changes. A talk whose every paragraph was
+filtered out can never be shown, so its photo is never downloaded. When a new
+conference takes over the pool, photos no longer reachable from the calendar are
+pruned in the same run.
 
 A talk whose photo cannot be fetched simply gets no photo: the figure is
 hidden, and the rest of the card is unchanged.
@@ -208,18 +410,24 @@ and a way to share each of them (above).
 
 The script is enhancement only. Apart from the theme button and swapping the
 share block for a share sheet, it does nothing at all unless the reader's own
-date has moved past the date the page was built for. In that one case it swaps in the right day from
-`data/daily.json`. If
-that fetch fails, the baked-in readings stay put and the date shown next to them
-is the date they belong to, so the page never claims a reading is today's when
-it isn't.
+date has moved past the date the page was built for — someone ahead of the build
+timezone, or looking at a copy served from cache. In that one case it swaps in
+the right day from `data/daily.json`. If that fetch fails, the baked-in readings
+stay put, the date shown next to them is the date they belong to, and a short
+notice says which day the page is showing — so the page never claims a reading
+is today's when it isn't.
 
-Two scheduled GitHub Actions keep it current:
+Two scheduled runs of `.github/workflows/deploy.yml` keep it current:
 
-- **daily**, just after midnight in the build timezone — re-renders the page for
-  the new day from the calendar already in the repository, fetching nothing;
-- **Mondays and Thursdays** — refetches to extend the calendar and pick up a
-  newly published conference or manual.
+- **daily**, at 08:10 UTC — the small hours in `America/Denver`, the timezone
+  the page is built for. This re-renders the page for the new day from the
+  calendar already in the repository, and fetches nothing.
+- **Mondays and Thursdays**, at 09:00 UTC — a full refetch, to extend the
+  calendar and pick up a newly published conference or manual.
+
+Anything either run changes — `data/daily.json`, `index.html`, and the speaker
+photos — is committed back to the repository, and then only the served files are
+published to Pages.
 
 Because the daily job is what moves a no-JavaScript page on to the next day, the
 site depends on it running. The calendar is built two years ahead, so a missed
@@ -232,6 +440,8 @@ python tools/build_daily.py              # refetch, rebuild the calendar, render
 python tools/build_daily.py --render-only  # just re-render today's page, no network
 python -m http.server 8000               # then open http://localhost:8000
 ```
+
+Python 3.9 or later, standard library only — there is nothing to install.
 
 `index.html` is generated — **edit `tools/template.html`, not `index.html`.**
 
@@ -256,16 +466,19 @@ python tools/build_daily.py \
 `--manual` is an override for testing; leave it alone and the four-year cycle
 picks the manuals on its own.
 
-Quoting only the most recent conference gives a pool of roughly 250 passages, so
-over a two-year calendar a quote comes round again about every eight months.
-Raise `--conferences` if you would rather trade freshness for variety.
-
 `--timezone` and the daily cron in `.github/workflows/deploy.yml` need to agree;
 change them together.
 
-Responses are cached under `.cache/`; delete it to force a clean fetch. Speaker
-photos are kept in `assets/speakers/` and are part of the site rather than the
-cache — delete one and the next full build downloads it again.
+A full build makes several hundred requests and takes a few minutes on a cold
+cache. Responses are memoised under `.cache/`; delete it to force a clean fetch.
+Speaker photos are kept in `assets/speakers/` and are part of the site rather
+than the cache — delete one and the next full build downloads it again.
+
+The build prints what it decided as it goes: how many verses cleared the bar and
+where the cutoff landed, how many weeks got a full set, which conference was
+chosen and how many quotes came out of it, and how many days of the calendar
+have a Come, Follow Me verse — that last figure being when the card would go
+dark if no further manual were ever published.
 
 ## Licensing, and what the licence does not cover
 
