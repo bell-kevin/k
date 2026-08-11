@@ -44,6 +44,13 @@ jobs:
         with:
           python-version: "3.12"
 
+      # The rules that decide a reading are regular expressions over English,
+      # so they generalise in ways nobody intended. These cases are verses a
+      # reader ruled on, and they run before anything is built or deployed --
+      # they need no network, the verses are committed beside them.
+      - name: Check the reading rules
+        run: python tools/test_readings.py
+
       # A full refetch is ~350 requests, so it runs only on the twice-weekly
       # cron or when asked for. Every other run just re-renders today's page
       # from the calendar already in the repository.
