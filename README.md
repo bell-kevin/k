@@ -81,7 +81,89 @@ journeying in the wilderness — or if it is not a whole thought to begin with:
   sentence that began in the verse before, and no amount of doctrine in the
   rest of it makes it a reading;
 - a verse that only introduces the speech in the next one — *Then Job answered
-  and said,* — is the label, not the reading.
+  and said,* — is the label, not the reading;
+- a verse with **a "he" it never answers**. This is the one that decides most
+  verses, and **number is what it turns on.**
+
+  A plural reads as generic however it got there. *Nevertheless they did fast
+  and pray oft, and did wax stronger and stronger in their humility, and firmer
+  and firmer in the faith of Christ* never says who *they* were and loses
+  nothing by it: a reader supplies "people who do this" and the verse means
+  exactly what it meant. A singular cannot be read that way. *Behold, he
+  offereth himself a sacrifice for sin, to answer the ends of the law* is
+  doctrine as plain as any in the book, and still lands wrong on anyone who
+  does not already know that *he* is Christ — which 2 Nephi 2:6 says and 2
+  Nephi 2:7 does not.
+
+  So a plural is left alone, and **a singular has to find its referent inside
+  its own verse.** Position is the whole of the test. *And the Lord did pour
+  out his Spirit upon them* names the Lord before it says *his*, while *And
+  they rehearsed unto his father all that had happened unto them; and his
+  father rejoiced, for he knew that it was the power of God* reaches *God* only
+  after three pronouns have gone by unanswered. That verse is Alma the younger
+  coming back from the angel, and every word of it is doing its work — but a
+  reader meeting it alone is never told who *they* are, whose father, or what
+  happened.
+
+  A name is not the only thing a pronoun can rest on. **A gospel word counts**
+  — *And charity suffereth long … seeketh not her own* names nobody and wants
+  nobody, because the *her* is charity, which the verse opened with. So does
+  **a generic somebody**: *it is counted evil unto a man, if he shall pray and
+  not with real intent of heart* needs no one named, since *a man* is already
+  who *he* is. What stays refused is the verse with nothing whatsoever in front
+  of the pronoun — *And he commanded them that they should observe the sabbath
+  day*, *And he preached the word unto your fathers*, *And he had hope to shake
+  me from the faith* (which is Sherem, the anti-Christ, and reads like counsel
+  until you know that).
+
+  Three exemptions. The generic **he that** means whoever fits rather than
+  anybody in particular, needs nothing named, and opens some of the plainest
+  teaching there is — *He that hath ears to hear, let him hear*. A verse
+  arriving at **a conviction of its own** is kept whatever dangles in front of
+  it, because the half a reader carries away speaks for itself: *Though he slay
+  me, yet will I trust in him* is built exactly this way, and so is *For I know
+  that my redeemer liveth, and that he shall stand at the latter day upon the
+  earth*.
+
+  And a verse that **states its teaching of a generic subject** is kept however
+  it opened, because whatever dangles ahead of that is a turn in the argument
+  and not the subject. Moroni 7:43 and 7:44 sit next to each other and divide
+  on exactly this. 7:43 is *he cannot have faith and hope, save he shall be
+  meek, and lowly of heart* — the pronoun is the only subject there is, and the
+  reader has to bring one. 7:44 opens on a dangling *his faith and hope is
+  vain* and then says the whole thing again with a subject in it: *none is
+  acceptable before God, save the meek and lowly in heart; and if a man be meek
+  and lowly in heart … he must needs have charity.*
+
+  The verb is what makes that a subject, and requiring it matters. 2 Nephi 2:7
+  closes *and unto none else can the ends of the law be answered* — that *none*
+  is who the verse is **for**, not who it is **about**, and *he offereth
+  himself a sacrifice for sin* still wants Christ named before it can be read.
+  7:44's *none is acceptable* heads its own clause.
+
+- **a verse pointing out of itself some other way.** A dangling speech
+  attribution leaves the speaker behind instead of the subject: Job 1:21
+  reaches the card as *And said, Naked came I out of my mother's womb*, because
+  the man saying it is back in verse 20. Only an attribution naming nobody
+  counts — *thus said Jesus Christ, the Son of God, unto his disciples* says
+  whose words follow.
+
+  A demonstrative standing where the subject goes is refused when it hands off
+  to another pronoun or to an act the verse never describes: *And these are
+  those who have part in the first resurrection* goes, and so does *And this
+  was done because there were so many people*, while *And this is my doctrine*
+  and *And this is life eternal* stay. Used as a determiner it is left alone,
+  since the subject is still to come and usually turns out to be the speaker —
+  *But this much I can tell you…*, *These things have I written unto you*. So
+  is **this is not all**: it is a turn in the argument rather than a subject,
+  the teaching lands immediately after it, and what *all* referred to is no
+  part of what the reader carries off — *But this is not all; ye must pour out
+  your souls in your closets, and your secret places, and in your wilderness*
+  wants nothing from the verse before it.
+
+  The lead-in comes off before any of this is asked, since scripture is
+  punctuated as one continuous telling and nearly every verse opens by tying
+  itself to the last — *And it came to pass that…* is scaffolding, not subject.
 
 **How well does it stand alone?** What survives is scored.
 
@@ -133,14 +215,17 @@ And against it:
   what a verse of the day is most often about, so counting them charged a verse
   for its own subject — and neither are words capitalised only because they
   open a sentence, which used to tax "Naked came I out of my mother's womb" as
-  heavily as a page of genealogy.
+  heavily as a page of genealogy. (That verse is Job 1:21, and it is now turned
+  down a step earlier, at the gate above, for opening on *And said,* with its
+  speaker left in the verse before. *Naked* is still not a name, and the
+  correction still matters everywhere else the word count reaches.)
 - **−2.5 for a verse that is nothing but a question**, which the verse after it
   answers and the reader is left holding.
 
-A verse needs 3.0 to be quotable at all. **2,131 of the 6,604 clear that bar**,
-which is more than five years of reading and takes in a lot that merely
+A verse needs 3.0 to be quotable at all. **1,863 of the 6,604 clear that bar**,
+which is more than four years of reading and takes in a lot that merely
 scraped through, so the ordinary days draw on **the best 500** instead (the last
-build's cutoff was 7.1). Five hundred is chosen deliberately: it is more than a
+build's cutoff was 6.7). Five hundred is chosen deliberately: it is more than a
 year, so a reader is never shown a repeat inside their first year, and it still
 turns over enough that a second year is not a rerun of the first.
 
@@ -215,10 +300,24 @@ structural tests the Book of Mormon card applies are applied here too — this
 card used to check only the length, and let through readings like *…which was
 spoken of the Lord by the prophet, saying,*.
 
-The Job week now opens on Job 1:1 and 1:21, passes through *though he slay me,
-yet will I trust in him*, and arrives at **Job 19:25 — "For I know that my
-redeemer liveth"**, which under the old scoring was not merely passed over but
-scored zero.
+That shared gate is why the pronoun rule above reaches this card as well, and
+this is the card it was worth most to. The week on Job used to spend its second
+day on *And said, Naked came I out of my mother's womb* — the words are Job's,
+but the verse does not say so, because *Then Job arose, and rent his mantle* is
+back in verse 20.
+
+Refusing it is also what turned up the weakness in an earlier version of the
+rule. With 1:21 gone the day fell to Job 1:16, *While he was yet speaking,
+there came also another* — a messenger's report of a disaster to a man that
+verse never names either — which a test looking only at the subject's place
+walked straight past. Asking instead whether the *he* is ever answered inside
+the verse catches both, and wherever in the verse they hide.
+
+The week now opens on Job 1:1, passes through *though he slay me, yet will I
+trust in him*, reaches **Job 19:25 — "For I know that my redeemer liveth"**,
+which under the old scoring was not merely passed over but scored zero, and
+closes on Job 42:2 — *I know that thou canst do every thing* — which is where
+the assignment itself ends.
 
 Once the seven are picked they are **put back into the order the assignment
 runs**, so the week walks through the reading in sequence and arrives at church
@@ -250,7 +349,15 @@ characters, if it does not end in a full stop, or if it is one of the things
 that only makes sense next to the paragraph before it:
 
 - an opener that continues a thought — *But…*, *So…*, *However…*, *That…*,
-  *He…*, *They…*, *I was…*, *After…*;
+  *He…*, *They…*, *I was…*, *After…*. This card has refused paragraphs on this
+  ground since it was written, which is why its quotes read cleanly while the
+  two scripture cards were still printing *And they rehearsed unto his father*;
+  the fix above brings those two up to this standard. The possessives and
+  objects — *His…*, *Their…*, *Them…* — were added here at the same time, for
+  the same reason the subjects are refused: *Their example has stayed with me*
+  is as unreadable cold as *They stayed with me*. It cost this conference's
+  pool nothing, finding no paragraph the rest of the test was not already
+  turning down;
 - an adverb opener — *Tragically,…* almost always continues a story;
 - storytelling rather than counsel, spotted by a subject-and-past-tense-verb
   pair in the opening — *he told*, *we went*, *I felt*, *she saw*. The verbs are
