@@ -2,7 +2,7 @@
 
 # Verse &amp; Quote of the Day
 
-https://bell-kevin.github.io/k/
+https://bell-kevin.github.io/verse/
 
 A plain website that shows, every day:
 
@@ -835,6 +835,6 @@ This site is not affiliated with, endorsed by, or produced by The Church of
 Jesus Christ of Latter-day Saints. If you want to reuse Church content beyond
 personal study, see <https://permissions.churchofjesuschrist.org/>.
 
-https://bell-kevin.github.io/k/
+https://bell-kevin.github.io/verse/
 
 <p align="left"><a href="#readme-top">back to top</a></p>
