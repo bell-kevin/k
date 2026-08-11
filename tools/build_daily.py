@@ -317,6 +317,16 @@ def reads_as_a_reading(text: str) -> bool:
     # that hideth counsel without knowledge" is a relative clause carrying on.
     if re.match(r"^who\b", text, re.I) and "?" not in text:
         return False
+    # A whole sentence, but pointing out of itself -- see DANGLING_OPENER. The
+    # lead-in comes off first so the test looks at the verse's subject rather
+    # than at the conjunction tying it to the last one.
+    if DANGLING_OPENER.match(LEAD_IN.sub("", text)):
+        return False
+    # A "he" the verse never answers, unless it arrives at a conviction of its
+    # own: "Though he slay me, yet will I trust in him" is remembered for the
+    # half that speaks for itself. See `unanchored_singular`.
+    if unanchored_singular(text) and not TESTIMONY.search(text):
+        return False
     # A verse that only introduces the speech in the next one.
     return not SPEECH_STUB.search(text)
 
@@ -668,6 +678,167 @@ FRAGMENT_OPENER = re.compile(
 # A verse that only introduces speech -- "Then Job answered and said," -- is
 # the label on the reading, not the reading.
 SPEECH_STUB = re.compile(r"(and )?(said|saying|spake|answered)\s*[:,]\s*$", re.I)
+
+# The scaffolding a verse opens with before it reaches its subject. Scripture
+# is punctuated as one continuous telling, so nearly every verse starts by
+# joining itself to the one before, and these words have to be lifted off
+# before the test below can see what a verse is actually about: "And it came to
+# pass that they did ..." is a verse about "they", not a verse about "and".
+LEAD_IN = re.compile(
+    r"^(?:(?:and|but|now|yea|behold|verily|wherefore|therefore|nevertheless|"
+    r"notwithstanding|for|so|then|thus|moreover|likewise|again|also|"
+    r"it came to pass)\b[,;:\s]*)+", re.I)
+
+# A verse can point out of itself in three ways that reading it cold does not
+# survive, and this pattern catches two of them. The third -- a pronoun with
+# nobody in the verse to mean -- is `unanchored_singular` below, because
+# answering it needs to know where the words are and not merely which ones.
+#
+# The first is a dangling speech attribution: the speaker left behind instead
+# of the subject. Job 1:21 reaches the card as "And said, Naked came I out of
+# my mother's womb", because the man saying it is back in verse 20. Only an
+# attribution naming nobody counts -- "thus said Jesus Christ, the Son of God,
+# unto his disciples" says whose words follow, and reads as well cold as
+# anything in the book.
+#
+# The second is a demonstrative standing where the subject goes. Two things
+# that only look like it are exempted:
+#
+#   * the expletive "it is", which stands in for nothing at all ("It is better
+#     that one man should perish than that a nation should dwindle in
+#     unbelief");
+#   * a demonstrative used as a determiner, where the subject is still to come
+#     and usually turns out to be the speaker: "But this much I can tell you,
+#     that if ye do not watch yourselves ... ye must perish", "These things
+#     have I written unto you". Only a demonstrative standing alone as the
+#     subject is looked at, which is why the test wants a verb after it.
+#
+# Standing alone, it is still let through when what follows names the thing it
+# means, since the verse then says what it is about rather than pointing out of
+# itself: "And this is my doctrine", "For behold, this is my church", "This is
+# the way; and there is none other way", "And this is life eternal, that they
+# might know thee the only true God". What is refused is the demonstrative that
+# hands off to another pronoun -- "And these are those who have part in the
+# first resurrection" -- or to a verb standing in for an act the verse never
+# describes: "And this was done because there were so many people", "This shall
+# ye always do".
+#
+# "This is not all" is none of those. It is a turn in the argument rather than
+# a subject, the teaching arrives immediately after it, and what "all" referred
+# to is no part of what the reader takes away: "But this is not all; ye must
+# pour out your souls in your closets, and your secret places, and in your
+# wilderness" is Alma 34:26, and it wants nothing from Alma 34:25. So a
+# negated demonstrative is left alone.
+#
+# The General Conference card has refused paragraphs on this ground since it
+# was written -- see `is_quotable_paragraph` -- and got the cleaner readings for
+# it. This brings the two scripture cards up to the same standard.
+DANGLING_OPENER = re.compile(
+    r"^(?:"
+    r"(?:thereof|therein|thereby)\b"
+    r"|it\b(?!\s+(?:is|was|were|shall|should|must|would|will|may|might|can|"
+    r"behooveth|cometh|mattereth|needs|hath)\b)"
+    r"|(?:this|these|those|such)\s+(?:is|are|was|were|be|shall|should|have|"
+    r"hath|had|did|do|doth)\s+(?:all|they|them|these|those|this|it|he|she|"
+    r"him|her|ye|done|so)\b"
+    r"|(?:said|answered|spake|replied)\b(?=\s*[,:;]|\s+(?:he|she|they|i|we|it|"
+    r"unto)\b)"
+    r")", re.I)
+
+# The third way out of itself, and the one that decides most verses: a
+# third-person *singular* pronoun with nobody in the verse to mean.
+#
+# Number is what matters here, and it took a while to see. A plural reads as
+# generic however it got there -- "Nevertheless they did fast and pray oft, and
+# did wax stronger and stronger in their humility, and firmer and firmer in the
+# faith of Christ" never says who "they" were, and loses nothing by it, because
+# a reader supplies "people who do this" and the verse means exactly what it
+# meant. A singular cannot be read that way. "Behold, he offereth himself a
+# sacrifice for sin, to answer the ends of the law" is doctrine as plain as any
+# in the book, and still lands wrong on anyone who does not already know that
+# "he" is Christ -- which 2 Nephi 2:6 says and 2 Nephi 2:7 does not.
+#
+# So a plural is left alone, and a singular has to find its referent inside its
+# own verse. Position is the whole of the test: "And the Lord did pour out his
+# Spirit upon them" names the Lord before it says "his", while "And they
+# rehearsed unto his father ... for he knew that it was the power of God"
+# reaches "God" only after three pronouns have gone by unanswered, which is why
+# that verse cannot be read cold and this one can.
+# Somebody named, or deity, whom a reader of these books resolves on sight.
+ANCHOR = re.compile(
+    r"\b(?:Lord|God|Christ|Jesus|Messiah|Savior|Saviour|Redeemer|Almighty|"
+    r"Jehovah|Immanuel|Creator|Father|Son|Spirit|Ghost|Comforter|Lamb)\b"
+    r"|(?<![.!?]\s)(?<!^)\b[A-Z][a-z]{2,}\b")
+
+THIRD_SINGULAR = re.compile(r"\b(?:he|him|his|she|her|hers)\b", re.I)
+
+# "He that hath ears to hear, let him hear." A generic singular means whoever
+# fits rather than anybody in particular, needs nothing named, and binds the
+# pronouns that follow it in the same verse.
+GENERIC_SINGULAR = re.compile(r"^(?:he|him|his)\s+(?:that|which|who|whom|whose)\b",
+                              re.I)
+
+# A verse that states its teaching of a generic somebody has supplied its own
+# referent, and the pronouns around it read as generic whatever came first.
+# Moroni 7:43 and 7:44 sit next to each other and divide on exactly this. 7:43
+# is "he cannot have faith and hope, save he shall be meek, and lowly of
+# heart", where the pronoun is the only subject there is and the reader has to
+# bring one. 7:44 opens on a dangling "his faith and hope is vain" and then
+# says the whole thing again with a subject in it -- "none is acceptable before
+# God, save the meek and lowly in heart; and if a man be meek and lowly in
+# heart ... he must needs have charity" -- so the opening is a turn in the
+# argument and the teaching after it stands on its own.
+#
+# The verb is required, because it is what makes the generic a *subject*. 2
+# Nephi 2:7 closes "and unto none else can the ends of the law be answered",
+# and that "none" is who the verse is for rather than who it is about -- "he
+# offereth himself a sacrifice for sin" still wants Christ named to be read.
+# 7:44's "none is acceptable before God" is the subject of its own clause.
+GENERIC_SUBJECT = re.compile(
+    r"\b(?:a man|a woman|a person|a soul|a child|none|no man|no one|any man|"
+    r"every man|whoso|whosoever)\s+"
+    r"(?:is|are|was|were|be|can|cannot|shall|will|hath|has|have|had|could|"
+    r"would|should|must|may|might|do|doth|did|cometh|receiveth|seeketh)\b", re.I)
+
+# The same somebodies, as an antecedent rather than a subject. Standing before
+# the pronoun, a generic answers it just as a name would: "it is counted evil
+# unto a man, if he shall pray and not with real intent of heart" needs nobody
+# named, because "a man" is already who "he" is.
+GENERIC_ANTECEDENT = re.compile(
+    r"\b(?:a man|a woman|a person|a soul|a child|none|no man|no one|any man|"
+    r"every man|whoso|whosoever)\b", re.I)
+
+
+def unanchored_singular(text: str) -> bool:
+    """Whether a he/him/his in the verse has nothing in the verse to mean.
+
+    A name is not the only thing a pronoun can be resting on. "And charity
+    suffereth long ... seeketh not her own" names nobody and wants nobody: the
+    "her" is charity, which the verse opened with. So a gospel word standing
+    before the pronoun anchors it too, and that one change is the difference
+    between refusing that verse and keeping it -- along with "for a man
+    sometimes, if he is compelled to be humble, seeketh repentance", and "trust
+    no one to be your teacher nor your minister, except he be a man of God".
+    What stays refused is the verse with nothing at all in front of the
+    pronoun: "Behold, he offereth himself a sacrifice for sin", "And they
+    rehearsed unto his father".
+    """
+    pronoun = THIRD_SINGULAR.search(text)
+    if not pronoun or GENERIC_SINGULAR.match(text[pronoun.start():]):
+        return False
+    # The verse states its teaching of a generic somebody, so whatever dangles
+    # ahead of that is a turn in the argument rather than the subject.
+    if GENERIC_SUBJECT.search(text):
+        return False
+    before = text[:pronoun.start()]
+    if DOCTRINAL.search(before) or GENERIC_ANTECEDENT.search(before):
+        return False
+    for match in ANCHOR.finditer(before):
+        # Words capitalised for opening a sentence name nobody; see
+        # `proper_nouns`, which discounts them for the same reason.
+        if match.group(0).lower() not in SENTENCE_OPENERS:
+            return False
+    return True
 
 # First-person conviction, which is what a verse is usually remembered for.
 TESTIMONY = re.compile(
@@ -1324,9 +1495,15 @@ def is_quotable_paragraph(text: str) -> bool:
     if SELF_REFERENTIAL.search(text) or ENUMERATION.match(text):
         return False
     # Skip paragraphs that only make sense next to the one before them, and
-    # scene-setting narration that is not a teaching.
+    # scene-setting narration that is not a teaching. The possessives and
+    # objects are here for the same reason the subjects are -- "Their example
+    # has stayed with me" is as unreadable cold as "They stayed with me" -- and
+    # they cost this conference's pool nothing, having found no paragraph the
+    # rest of the test was not already refusing. They are the standard the two
+    # scripture cards are held to as well; see DANGLING_OPENER.
     if re.match(r"^(But|So|Then|Yet|However|That|This|These|Those|It was|"
-                r"He |She |They |We were|I was|After |Later|Then,)\b", text):
+                r"He |She |They |His|Her|Their|Its|Him|Them|Such|"
+                r"We were|I was|After |Later|Then,)\b", text):
         return False
     # "Tragically, the bullet ..." -- an adverb opener almost always continues
     # a story told in the paragraph before.
