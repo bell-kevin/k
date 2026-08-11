@@ -43,6 +43,8 @@ verse is drawn from, so it stays in step with what wards are studying.
 | --- | --- |
 | `index.html` | The site. **Generated** — edit `tools/template.html`, not this. |
 | `tools/build_daily.py` | The builder: fetches, chooses, writes the calendar, renders the page. |
+| `tools/test_readings.py` | Checks the rules that decide a reading against verses ruled on by hand. |
+| `tools/readings_cases.json` | Those verses, as published. **Generated** — see `--refresh`. |
 | `tools/template.html` | The page itself, with placeholders where the day's readings go. |
 | `data/daily.json` | The prebuilt calendar — two years of daily picks, about 1 MB. |
 | `assets/app.js` | The enhancement script: theme, share, and correcting the day. |
@@ -697,6 +699,35 @@ A full build makes several hundred requests and takes a few minutes on a cold
 cache. Responses are memoised under `.cache/`; delete it to force a clean fetch.
 Speaker photos are kept in `assets/speakers/` and are part of the site rather
 than the cache — delete one and the next full build downloads it again.
+
+### Checking the rules that decide a reading
+
+```sh
+python tools/test_readings.py            # no network, no cache needed
+```
+
+The rules above are regular expressions over English, so they generalise in
+ways nobody intended. A pattern written to refuse *And they rehearsed unto his
+father* also refused *But this much I can tell you*; one written to keep Moroni
+7:44 also kept 2 Nephi 2:7. `tools/readings_cases.json` holds the verses that
+have been ruled on either way — the ones a reader judged, marked `*` in the
+output, and the ones kept since as regression guards — and the test asserts the
+rule still answers each of them the same way. It runs in CI before anything is
+built or deployed.
+
+**The verses in it are never typed by hand.** An earlier version of these cases
+was, and a 2 Nephi 2:7 missing its closing clause passed a test that the verse
+as published fails: the rule was wrong, the test agreed with it, and only a
+sweep of the whole book caught it. To add a case, write the reference and the
+verdict and let the API supply the words:
+
+```sh
+python tools/test_readings.py --refresh  # fill in every case's text from the study API
+python tools/test_readings.py --verify   # confirm the committed text is still what is published
+```
+
+Both go through the same fetch and the same parser the builder uses, so what is
+tested is what a card would show.
 
 The build prints what it decided as it goes: how many verses cleared the bar and
 where the cutoff landed, how many weeks got a full set, which conference was
