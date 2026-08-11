@@ -179,6 +179,87 @@ def passage_anchor(nums: list[int]) -> str:
                     for lo, hi in verse_ranges(nums))
 
 
+# The study reader does nothing to soften a fragment landing. Its stylesheets
+# set no scroll-margin and no scroll-padding, and nothing on the page moves the
+# scroll after the browser has jumped. So following #p23 puts verse 23's first
+# line flush against the top of the window -- underneath the reader's own
+# chapter toolbar, which is drawn over the top of the page. The verse someone
+# followed the link to read arrives with its opening line already cut in half.
+#
+# Only the link is ours to change, and that turns out to be enough, because the
+# reader takes `id=` and the fragment as two separate instructions: `id=` says
+# what to highlight, the fragment says where to scroll. Its own footnote links
+# already use them apart, as `?id=p21#note1_a`. So the fragment is aimed a
+# verse or two above the one being quoted, and that earlier text takes the
+# toolbar's place at the top of the screen. The highlight lands where it always
+# did, on the verse the card actually quoted.
+#
+# How far above is a compromise between two ways of being wrong: too little and
+# the toolbar still clips the verse, too much and the run-up pushes the verse
+# off the bottom instead. Two hundred characters is about six lines on a phone
+# -- comfortably deeper than the toolbar reaches, and shallow enough that even
+# a long verse still opens well inside the screen.
+#
+# The ceiling is the far side of the same thought, and it is the higher number
+# because one paragraph back is the least that helps at all: a link is allowed
+# to overshoot the cushion rather than not clear the toolbar. What it is not
+# allowed to do is land on a paragraph long enough to fill the screen by
+# itself, which would leave the verse below the fold -- worse than the clipping
+# this is here to fix.
+SCROLL_CUSHION = 200
+SCROLL_CEILING = 400
+SCROLL_LOOKBACK = 2
+
+
+def scroll_fragment(page: list[tuple[str, str]], index: int) -> str:
+    """The '#...' that opens `page[index]` clear of the reader's toolbar.
+
+    `page` is a page's paragraphs in the order they are published, each as its
+    anchor id and its text; `index` picks out the one being quoted. The answer
+    names an earlier paragraph, whose text becomes what the toolbar covers.
+
+    Two cases get no cushion, for opposite reasons. A paragraph with nothing
+    published above it gets no fragment at all, which leaves the browser at the
+    top of the page -- where that paragraph already is, under the chapter
+    heading rather than under the toolbar; scrolling it to the top would be the
+    one move guaranteed to clip it. And a paragraph whose neighbour above is
+    too long to stand in front of it keeps its own anchor, clipped, because
+    being cut off at the top beats starting below the bottom.
+    """
+    if index == 0:
+        return ""
+    anchor = index
+    cushion = 0
+    while anchor > 0 and index - anchor < SCROLL_LOOKBACK:
+        above = cushion + len(page[anchor - 1][1])
+        # The first step back is the one that clears the toolbar, so it gets
+        # the ceiling to spend. The steps after it exist for the chapters of
+        # one-line verses, where one verse of cushion is barely a cushion at
+        # all, and they are taken only while they stay inside what was wanted.
+        if above > (SCROLL_CEILING if anchor == index else SCROLL_CUSHION):
+            break
+        anchor -= 1
+        cushion = above
+    return f"#{page[anchor][0]}"
+
+
+def verse_scroll(parsed: dict[int, str], num: int) -> str:
+    """`scroll_fragment` for a chapter, where the paragraphs are numbered verses.
+
+    The verse above is the one published above, which is not always the one a
+    number below: a Joseph Smith Translation chapter prints only the verses it
+    changes, so JST Matthew 3 runs 4, 5, 6, 24, 25 and the paragraph a reader
+    sees above verse 24 is verse 6. Walking the numbers this chapter actually
+    has, rather than counting down from the verse, is what gets that right.
+
+    The verse quoted is always one the chapter has, because every caller took
+    it out of `parsed` in the first place.
+    """
+    numbers = sorted(parsed)
+    page = [(f"p{n}", parsed[n]) for n in numbers]
+    return scroll_fragment(page, numbers.index(num))
+
+
 def fetch_passage(path: str, nums: list[int]) -> dict | None:
     """One mastery passage, quoted whole: every verse of it, in order.
 
@@ -204,7 +285,8 @@ def fetch_passage(path: str, nums: list[int]) -> dict | None:
         "reference": f"{book_name(book)} {chapter}:{format_verses(nums)}",
         "text": " ".join(texts),
         "url": f"https://www.churchofjesuschrist.org/study/scriptures/{path}"
-               f"?lang=eng&id={passage_anchor(nums)}#p{min(nums)}",
+               f"?lang=eng&id={passage_anchor(nums)}"
+               f"{verse_scroll(parsed, min(nums))}",
         "mastery": True,
     }
 
@@ -374,13 +456,15 @@ def build_bom_pool() -> list[dict]:
             page = pages.get(f"/scriptures/bofm/{slug}/{ch}")
             if not page:
                 continue
-            for num, text in sorted(parse_verses(page["content"]["body"]).items()):
+            parsed = parse_verses(page["content"]["body"])
+            for num, text in sorted(parsed.items()):
                 if is_quotable_verse(text) and (f"bofm/{slug}/{ch}", num) not in spoken_for:
                     pool.append({
                         "reference": f"{name} {ch}:{num}",
                         "text": text,
                         "url": f"https://www.churchofjesuschrist.org/study/scriptures/"
-                               f"bofm/{slug}/{ch}?lang=eng&id=p{num}#p{num}",
+                               f"bofm/{slug}/{ch}?lang=eng&id=p{num}"
+                               f"{verse_scroll(parsed, num)}",
                         "score": verse_score(text),
                     })
     print(f"Book of Mormon: {len(pool)} quotable verses")
@@ -1070,7 +1154,8 @@ def build_cfm_weeks(manual: str, year: int) -> list[dict]:
                         "reference": f"{book_name(book)} {ch}:{num}",
                         "text": text,
                         "url": f"https://www.churchofjesuschrist.org/study/scriptures/"
-                               f"{chapter_path}?lang=eng&id=p{num}#p{num}",
+                               f"{chapter_path}?lang=eng&id=p{num}"
+                               f"{verse_scroll(parsed, num)}",
                         "assigned": block is None or in_block(block, book, int(ch)),
                         "rank": block_rank(block, book, int(ch)) if block else 0,
                         "chapter": int(ch),
@@ -1567,13 +1652,16 @@ def build_quote_pool(count: int = 1) -> list[dict]:
             # bibliography lines, not anything worth quoting.
             block = re.search(r'<div class="body-block">(.*?)(?:<footer class="notes">|\Z)',
                               body, re.S)
-            paragraphs = re.findall(r'<p [^>]*id="(p[_A-Za-z0-9]+)"[^>]*>(.*?)</p>',
-                                    block.group(1) if block else "", re.S)
+            # Cleaned here rather than in the loop below, because a quote's link
+            # is aimed at the paragraph above it and so needs the text of
+            # paragraphs this talk is never quoted from -- see scroll_fragment.
+            paragraphs = [(pid, clean(raw)) for pid, raw in
+                          re.findall(r'<p [^>]*id="(p[_A-Za-z0-9]+)"[^>]*>(.*?)</p>',
+                                     block.group(1) if block else "", re.S)]
             session = f"{'April' if month == 4 else 'October'} {year}"
             rank = speaker_rank(role_text)
             candidates = []
-            for pid, raw in paragraphs:
-                text = clean(raw)
+            for index, (pid, text) in enumerate(paragraphs):
                 if (is_quotable_paragraph(text)
                         and quote_substance(text) >= QUOTE_SUBSTANCE_FLOOR
                         and quote_score(text) >= QUOTE_FLOOR):
@@ -1584,7 +1672,8 @@ def build_quote_pool(count: int = 1) -> list[dict]:
                         "talk": title,
                         "session": session,
                         "url": f"https://www.churchofjesuschrist.org/study{uri}"
-                               f"?lang=eng&id={pid}#{pid}",
+                               f"?lang=eng&id={pid}"
+                               f"{scroll_fragment(paragraphs, index)}",
                         "score": quote_score(text),
                         "closing": bool(BENEDICTION.search(text)),
                     })

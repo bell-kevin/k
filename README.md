@@ -45,6 +45,7 @@ verse is drawn from, so it stays in step with what wards are studying.
 | `tools/build_daily.py` | The builder: fetches, chooses, writes the calendar, renders the page. |
 | `tools/test_readings.py` | Checks the rules that decide a reading against verses ruled on by hand. |
 | `tools/readings_cases.json` | Those verses, as published. **Generated** — see `--refresh`. |
+| `tools/test_links.py` | Checks that a link opens its verse where a reader can see it. |
 | `tools/template.html` | The page itself, with placeholders where the day's readings go. |
 | `data/daily.json` | The prebuilt calendar — two years of daily picks, about 1 MB. |
 | `assets/app.js` | The enhancement script: theme, share, and correcting the day. |
@@ -560,6 +561,64 @@ The button is hidden in the markup and revealed by the script, so with
 JavaScript switched off you are not shown a control that cannot do anything —
 the page just follows the system setting, exactly as before.
 
+## Where a link lands
+
+Every reference on a card links to the verse on `churchofjesuschrist.org`, and
+for a long time it linked *at* the verse: `?lang=eng&id=p23#p23`, meaning
+highlight verse 23 and scroll to verse 23. That is the obvious thing to write
+and it puts the verse in the wrong place. The study reader offsets a fragment
+landing by nothing at all — no `scroll-margin`, no `scroll-padding`, no script
+that moves the scroll once the browser has jumped — so the browser does exactly
+what it was asked and puts verse 23's first line flush against the top of the
+window. The reader then draws its own chapter toolbar across that same strip.
+You tap a reference and arrive at the verse with its opening line cut in half.
+
+Nothing about that is fixable from this end — it is their page, their toolbar,
+their stylesheet. The link is fixable, and the link is enough, because the
+study reader reads the two halves of it separately: `id=` says what to
+highlight, the fragment says where to scroll. Its own footnote links already
+use them apart, as `?id=p21#note1_a`. So a card links like this:
+
+```
+https://www.churchofjesuschrist.org/study/scriptures/bofm/mosiah/15?lang=eng&id=p23#p22
+```
+
+Highlight verse 23; scroll to verse 22. Verse 22 takes the toolbar's place at
+the top of the screen, and verse 23 opens below it, whole and visible, with a
+little of what comes before it for context. The highlight has not moved.
+
+How far back to aim is a compromise between two ways of being wrong. Too little
+and the toolbar still clips the verse; too much and the run-up above pushes the
+verse off the bottom instead, which is worse — a verse cut off at the top is at
+least visibly there. So the builder walks back through the verses actually
+published above the one being quoted, adding up their length, and stops at
+about two hundred characters, roughly six lines on a phone. In a chapter of
+long verses that is one verse back. In a chapter of one-line verses it is two,
+which is what keeps a two-line cushion from being no cushion at all.
+
+Two cases get no cushion, for opposite reasons:
+
+- **A verse that opens its chapter** gets no fragment at all, so the browser
+  stays at the top of the page — which is where that verse already is, below
+  the chapter heading rather than beneath the toolbar. Scrolling it to the top
+  would be the one move guaranteed to clip it.
+- **A verse whose neighbour above is long enough to fill the screen** keeps its
+  own anchor and takes the clipping, because being cut off at the top beats
+  starting below the bottom.
+
+The verse above is the verse published above, which is not always the verse a
+number below. A Joseph Smith Translation chapter prints only the verses it
+changes, so JST Matthew 3 runs 4, 5, 6, 24, 25 — and a link to verse 24 scrolls
+to verse 6, because verse 6 is what a reader sees above it on that page.
+
+This applies to all three cards. The General Conference quote does the same
+thing over a talk's paragraphs, whose ids are opaque (`p_ebRgS`) rather than
+numbered, which is another reason the walk goes through the published order
+instead of doing arithmetic on the reference.
+
+`tools/test_links.py` holds it to this, and runs in CI before anything is
+built — see [below](#checking-where-a-link-lands).
+
 ## Sharing a card
 
 Each card has a **Share** button under it, which hands the reading to your own
@@ -568,17 +627,19 @@ in the same shape, so one passed on from here sits in a thread beside one from
 there without looking out of place:
 
 ```
-On this glorious Easter Sunday, I have chosen to speak first about the
-Resurrection, which is a pillar of our faith.
+A bishop who seeks to heal a troubled marriage or resolve a personal
+controversy is working for peace.
 
 President Dallin H. Oaks
 
-https://www.churchofjesuschrist.org/study/general-conference/2026/04/49oaks?lang=eng&id=p_mZMDI#p_mZMDI
+https://www.churchofjesuschrist.org/study/general-conference/2026/04/49oaks?lang=eng&id=p_pRDHb#p_gQ2sf
 ```
 
 The link is the official source on `churchofjesuschrist.org`, pointing at the
 exact verse or paragraph — never at this site — so whoever receives it can read
-it where it was published.
+it where it was published. It is the same link the card carries, aimed the same
+way, so what a share opens to is what tapping the reference opens to (see
+[Where a link lands](#where-a-link-lands)).
 
 The sheet is your operating system's and the apps in it are yours; **this page
 sends nothing anywhere and is never told what you shared, or with whom.** On a
@@ -728,6 +789,25 @@ python tools/test_readings.py --verify   # confirm the committed text is still w
 
 Both go through the same fetch and the same parser the builder uses, so what is
 tested is what a card would show.
+
+### Checking where a link lands
+
+```sh
+python tools/test_links.py               # no network, no cache needed
+```
+
+A link has to open its verse where a reader can actually see it, and there are
+two ways to fail that: aim too close and the study reader's toolbar still clips
+the verse, aim too far back and the run-up pushes the verse below the fold.
+`tools/test_links.py` is written in those terms rather than in fragments — each
+case says how much text a link may leave above its verse, so the test still
+means something if the cushion is ever retuned, and it prints the fragment each
+case produced so a change inside the bounds is still legible in the diff. It
+runs in CI beside the reading rules.
+
+A chapter is given to it as its verse *lengths* rather than its verse text,
+because only the lengths decide where a link lands — which is also why this one
+needs no committed corpus the way `test_readings.py` does.
 
 The build prints what it decided as it goes: how many verses cleared the bar and
 where the cutoff landed, how many weeks got a full set, which conference was
