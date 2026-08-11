@@ -51,6 +51,12 @@ jobs:
       - name: Check the reading rules
         run: python tools/test_readings.py
 
+      # A link has to open the verse where a reader can see it. The study
+      # reader draws its toolbar over the top of the page and offsets nothing,
+      # so where a link scrolls to is the site's problem to get right.
+      - name: Check where the links land
+        run: python tools/test_links.py
+
       # A full refetch is ~350 requests, so it runs only on the twice-weekly
       # cron or when asked for. Every other run just re-renders today's page
       # from the calendar already in the repository.
