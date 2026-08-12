@@ -15,7 +15,8 @@ No app, no account, no sign-in. Open the page and read it.
 **Contents** — [Why this exists](#why-this-exists) · [What is in here](#what-is-in-here) ·
 [How the readings are chosen](#how-the-readings-are-chosen) ·
 [How it keeps itself current](#how-it-keeps-itself-current) ·
-[Light and dark](#light-and-dark) · [Sharing a card](#sharing-a-card) ·
+[Light and dark](#light-and-dark) · [Where a link lands](#where-a-link-lands) ·
+[Sharing a card](#sharing-a-card) ·
 [It works with JavaScript switched off](#it-works-with-javascript-switched-off) ·
 [Running it yourself](#running-it-yourself) ·
 [Licensing](#licensing-and-what-the-licence-does-not-cover)
@@ -36,6 +37,11 @@ anyone can already read without an account, and serves them as a static page.
 The picks are therefore *not* the Church's official daily selections. The
 Come, Follow Me verse does follow the same weekly curriculum the Gospel Library
 verse is drawn from, so it stays in step with what wards are studying.
+
+The page's footer links on to the Church's own Newsroom releases, for the same
+reason the readings are built the way they are: that page is public, it needs no
+account, and a reader who came for the day's verse and wants the week's news
+should not have to sign in to get it either.
 
 ## What is in here
 
@@ -130,13 +136,13 @@ journeying in the wilderness — or if it is not a whole thought to begin with:
   A name is not the only thing a pronoun can rest on. **A gospel word counts**
   — *And charity suffereth long … seeketh not her own* names nobody and wants
   nobody, because the *her* is charity, which the verse opened with. So does
-  **a generic somebody**: *it is counted evil unto a man, if he shall pray and
-  not with real intent of heart* needs no one named, since *a man* is already
-  who *he* is. What stays refused is the verse with nothing whatsoever in front
-  of the pronoun — *And he commanded them that they should observe the sabbath
-  day*, *And he preached the word unto your fathers*, *And he had hope to shake
-  me from the faith* (which is Sherem, the anti-Christ, and reads like counsel
-  until you know that).
+  **a generic somebody**: *And likewise also is it counted evil unto a man, if
+  he shall pray and not with real intent of heart* needs no one named, since *a
+  man* is already who *he* is. What stays refused is the verse with nothing
+  whatsoever in front of the pronoun — *And he commanded them that they should
+  observe the sabbath day*, *And behold, he preached the word unto your
+  fathers*, *And he had hope to shake me from the faith* (which is Sherem, the
+  anti-Christ, and reads like counsel until you know that).
 
   Three exemptions. The generic **he that** means whoever fits rather than
   anybody in particular, needs nothing named, and opens some of the plainest
@@ -172,7 +178,7 @@ journeying in the wilderness — or if it is not a whole thought to begin with:
 
   A demonstrative standing where the subject goes is refused when it hands off
   to another pronoun or to an act the verse never describes: *And these are
-  those who have part in the first resurrection* goes, and so does *And this
+  those who have part in the first resurrection* goes, and so does *Now this
   was done because there were so many people*, while *And this is my doctrine*
   and *And this is life eternal* stay. Used as a determiner it is left alone,
   since the subject is still to come and usually turns out to be the speaker —
@@ -186,8 +192,8 @@ journeying in the wilderness — or if it is not a whole thought to begin with:
   An **"it" at the head of a verse** is doing one of two opposite jobs, and
   which one decides whether the verse survives. It is a placeholder when the
   verse goes on to say what it stands for — *It is better **that** one man
-  should perish than that a nation should dwindle in unbelief*, *It is a
-  fearful thing **to fall** into the hands of the living God*, *It is better
+  should perish than that a nation should dwindle and perish in unbelief*, *It
+  is a fearful thing **to fall** into the hands of the living God*, *It is better
   **to trust** in the Lord than to put confidence in man*. Nothing outside the
   verse is wanted, because the *it* is not about anything until the clause
   after it arrives.
@@ -263,13 +269,17 @@ And against it:
   correction still matters everywhere else the word count reaches.)
 - **−2.5 for a verse that is nothing but a question**, which the verse after it
   answers and the reader is left holding.
+- **−0.8 for a verse ending in a colon or a semicolon**, which usually means the
+  sentence finishes in the next one. A light touch rather than a refusal,
+  because the King James punctuates whole sentences that way as well.
 
-A verse needs 3.0 to be quotable at all. **1,852 of the 6,604 clear that bar**,
-which is more than four years of reading and takes in a lot that merely
-scraped through, so the ordinary days draw on **the best 500** instead (the last
-build's cutoff was 6.7). Five hundred is chosen deliberately: it is more than a
-year, so a reader is never shown a repeat inside their first year, and it still
-turns over enough that a second year is not a rerun of the first.
+A verse needs 3.0 to be quotable at all. **1,873 of the 6,604 clear that bar**,
+and 1,849 are left once the mastery passages below are taken out of the ordinary
+pool — more than four years of reading either way, and it takes in a lot that
+merely scraped through, so the ordinary days draw on **the best 500** instead
+(the last build's cutoff was 6.7). Five hundred is chosen deliberately: it is
+more than a year, so a reader is never shown a repeat inside their first year,
+and it still turns over enough that a second year is not a rerun of the first.
 
 Those 500 are shuffled with a fixed seed and then **dealt out round-robin by
 book**, so consecutive days come from different places rather than marching
@@ -328,9 +338,9 @@ strong cross-reference in when the reading itself is a week of lament.
 Two more rules keep a week from collapsing onto one passage:
 
 - **No more than two days from any one chapter.** Come, Follow Me often links a
-  long consecutive run — the lesson on Job cites all twenty-seven verses of Job
-  19 — and without a cap the week reads as a single passage dealt out slowly
-  rather than as a walk through the whole assignment.
+  long consecutive run — the lesson on Job cites verses 1 through 27 of Job 19's
+  twenty-nine — and without a cap the week reads as a single passage dealt out
+  slowly rather than as a walk through the whole assignment.
 - **A verse must score 2.5 to be worth a day at all.** Below that the week
   simply runs shorter and its readings come round again, which is better than
   filling the last days with whatever was left.
@@ -364,7 +374,14 @@ the assignment itself ends.
 Once the seven are picked they are **put back into the order the assignment
 runs**, so the week walks through the reading in sequence and arrives at church
 on Sunday having read it, rather than meeting it in a jumble. At the last build
-every one of the calendar's 76 full weeks got its seven.
+**74 of the calendar's 76 full weeks got their seven.**
+
+Both of the short ones were held there by the two-a-chapter cap rather than by
+the floor, which is the cap doing what it is for. The week on Esther had eight
+verses worth a day but they sat in five chapters, so it ran six; the week on
+Matthew 1; Luke 1 had twenty-seven, and twenty-four of them were in Luke 1
+alone, so it ran five. Six days walking a week's whole reading is a better week
+than seven days walking one chapter of it.
 
 If a week's title cannot be parsed the builder treats that as *no opinion*
 rather than *nothing assigned*, and takes the week's citations at face value —
@@ -387,8 +404,9 @@ not anything worth quoting — and each paragraph is asked the same two question
 the verses are.
 
 **Can it stand alone at all?** A paragraph is dropped if it is outside 90–420
-characters, if it does not end in a full stop, or if it is one of the things
-that only makes sense next to the paragraph before it:
+characters, if it does not end in a full stop (or a question or exclamation
+mark, with or without a closing quotation mark after it), or if it is one of the
+things that only makes sense next to the paragraph before it:
 
 - an opener that continues a thought — *But…*, *So…*, *However…*, *That…*,
   *He…*, *They…*, *I was…*, *After…*. This card has refused paragraphs on this
@@ -568,8 +586,8 @@ contacting nobody but the host serving the site, and keeps working offline and
 from a `file://` URL.
 
 The image URLs are IIIF, so the builder asks for the width it actually serves
-(480px, sharp at the card's 240px on a 2x display) rather than taking whatever
-size the page happened to link. That is currently 34 files and about 770 KB —
+(480px, just under twice the 272px the card displays it at) rather than taking
+whatever size the page happened to link. That is currently 34 files and 767 KB —
 one photo per talk that contributed a quote, fetched once and skipped on later
 builds since a talk's photo never changes. A talk whose every paragraph was
 filtered out can never be shown, so its photo is never downloaded. When a new
@@ -619,7 +637,7 @@ highlight, the fragment says where to scroll. Its own footnote links already
 use them apart, as `?id=p21#note1_a`. So a card links like this:
 
 ```
-https://www.churchofjesuschrist.org/study/scriptures/bofm/mosiah/15?lang=eng&id=p23#p22
+https://www.churchofjesuschrist.org/study/scriptures/nt/rom/6?lang=eng&id=p23#p22
 ```
 
 Highlight verse 23; scroll to verse 22. Verse 22 takes the toolbar's place at
@@ -795,10 +813,25 @@ picks the manuals on its own.
 `--timezone` and the daily cron in `.github/workflows/deploy.yml` need to agree;
 change them together.
 
-A full build makes several hundred requests and takes a few minutes on a cold
+A full build makes about 1,100 requests and takes a few minutes on a cold
 cache. Responses are memoised under `.cache/`; delete it to force a clean fetch.
 Speaker photos are kept in `assets/speakers/` and are part of the site rather
 than the cache — delete one and the next full build downloads it again.
+
+### What a build says as it goes
+
+It reports every decision above as it makes it: how many verses cleared the bar
+and where the tier's cutoff landed, how many Come, Follow Me weeks came out with
+citable verses and how many mastery passages were placed into them, any week
+whose title did not name a reading, which conference was chosen, what was
+skipped from it as church business, and how many quotes came out of how many
+talks.
+
+It closes on the calendar itself — the days it covers, its size on disk, how
+many speaker photos are held and how many were pruned, and how many days have a
+Come, Follow Me verse, with the span those days run over. That last date is the
+one to read: it is when the card would go dark if no further manual were ever
+published.
 
 ### Checking the rules that decide a reading
 
@@ -847,12 +880,6 @@ runs in CI beside the reading rules.
 A chapter is given to it as its verse *lengths* rather than its verse text,
 because only the lengths decide where a link lands — which is also why this one
 needs no committed corpus the way `test_readings.py` does.
-
-The build prints what it decided as it goes: how many verses cleared the bar and
-where the cutoff landed, how many weeks got a full set, which conference was
-chosen and how many quotes came out of it, and how many days of the calendar
-have a Come, Follow Me verse — that last figure being when the card would go
-dark if no further manual were ever published.
 
 ## Licensing, and what the licence does not cover
 

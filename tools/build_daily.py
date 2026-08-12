@@ -431,11 +431,12 @@ def is_quotable_verse(text: str) -> bool:
 VERSE_FLOOR = 3.0
 
 
-# How much of the quotable pool the ordinary days draw on. The whole pool is
-# a little over thirteen hundred verses, which is more than three years of
-# reading and takes in a lot that merely cleared the bar; keeping the best of
-# it means every day is a verse worth meeting cold, and still turns over enough
-# that a reader through a second year is not shown the first year again.
+# How much of the quotable pool the ordinary days draw on. 1,873 of the book's
+# 6,604 verses clear the floor, and 1,849 are left once the mastery passages
+# are taken out of the ordinary pool -- more than four years of reading, and it
+# takes in a lot that merely cleared the bar; keeping the best of it means every
+# day is a verse worth meeting cold, and still turns over enough that a reader
+# through a second year is not shown the first year again.
 BOM_TIER = 500
 
 # Days between one mastery passage and the next. Twenty-six turns a year for
@@ -695,10 +696,11 @@ def parse_verse_ids(query: str) -> list[int]:
 # scripture is written in Early Modern English and inflects heavily, so
 # "commandment" matched and "commandments" did not, "repent" matched and
 # "repentance" did not, "redeem" matched and "redeemer" did not. The cost was
-# not a rounding error. "For I know that my redeemer liveth" scored zero and
-# was dropped, while Satan's speech in the same chapter scored 3.5 and was
-# chosen -- so the stems, and the suffixes below, are the foundation the rest
-# of the scoring stands on.
+# not a rounding error. Job 19:25, "For I know that my redeemer liveth", scored
+# zero and was dropped, while Satan's speech eighteen chapters earlier -- "Hast
+# not thou made an hedge about him", Job 1:10 -- scored 3.5 on the strength of
+# one "blessed" and was chosen. So the stems, and the suffixes below, are the
+# foundation the rest of the scoring stands on.
 DOCTRINAL_STEMS = [
     # deity
     "lord", "god", "christ", "jesus", "messiah", "savior", "saviour", "redeem",
@@ -812,8 +814,8 @@ LEAD_IN = re.compile(
 # that only look like it are exempted:
 #
 #   * the expletive "it is", which stands in for nothing at all ("It is better
-#     that one man should perish than that a nation should dwindle in
-#     unbelief");
+#     that one man should perish than that a nation should dwindle and perish
+#     in unbelief");
 #   * a demonstrative used as a determiner, where the subject is still to come
 #     and usually turns out to be the speaker: "But this much I can tell you,
 #     that if ye do not watch yourselves ... ye must perish", "These things
@@ -827,7 +829,7 @@ LEAD_IN = re.compile(
 # might know thee the only true God". What is refused is the demonstrative that
 # hands off to another pronoun -- "And these are those who have part in the
 # first resurrection" -- or to a verb standing in for an act the verse never
-# describes: "And this was done because there were so many people", "This shall
+# describes: "Now this was done because there were so many people", "This shall
 # ye always do".
 #
 # "This is not all" is none of those. It is a turn in the argument rather than
@@ -857,11 +859,11 @@ DANGLING_OPENER = re.compile(
 # which one decides whether the verse can be read cold at all.
 #
 # It is a placeholder when the verse goes on to say what it stands for: "It is
-# better *that* one man should perish than that a nation should dwindle in
-# unbelief", "it is expedient *that* an atonement should be made", "It is a
-# fearful thing *to fall* into the hands of the living God", "It is better *to
-# trust* in the Lord than to put confidence in man". None of those wants
-# anything from outside, because the "it" is not about anything until the
+# better *that* one man should perish than that a nation should dwindle and
+# perish in unbelief", "it is expedient *that* an atonement should be made",
+# "It is a fearful thing *to fall* into the hands of the living God", "It is
+# better *to trust* in the Lord than to put confidence in man". None of those
+# wants anything from outside, because the "it" is not about anything until the
 # clause after it arrives -- which it does, in the same sentence.
 #
 # It is a pointer when the clause never comes. "But it is mockery before God,
@@ -880,8 +882,8 @@ DANGLING_OPENER = re.compile(
 # saying that what follows happened and always carries what follows with it;
 # and "it is written", where the "it" is the quotation that comes after the
 # comma. A negated opener is left alone for the reason "this is not all" is --
-# "and it mattereth not--we trust God will deliver us" is a turn in the
-# argument rather than a subject, and the teaching lands after it.
+# Alma 58:37's "But, behold, it mattereth not--we trust God will deliver us" is
+# a turn in the argument rather than a subject, and the teaching lands after it.
 IT_OPENER = re.compile(r"^it\b", re.I)
 
 QUOTING_IT = re.compile(
@@ -995,9 +997,10 @@ GENERIC_SUBJECT = re.compile(
     r"would|should|must|may|might|do|doth|did|cometh|receiveth|seeketh)\b", re.I)
 
 # The same somebodies, as an antecedent rather than a subject. Standing before
-# the pronoun, a generic answers it just as a name would: "it is counted evil
-# unto a man, if he shall pray and not with real intent of heart" needs nobody
-# named, because "a man" is already who "he" is.
+# the pronoun, a generic answers it just as a name would: Moroni 7:9's "And
+# likewise also is it counted evil unto a man, if he shall pray and not with
+# real intent of heart" needs nobody named, because "a man" is already who
+# "he" is.
 GENERIC_ANTECEDENT = re.compile(
     r"\b(?:a man|a woman|a person|a soul|a child|none|no man|no one|any man|"
     r"every man|whoso|whosoever)\b", re.I)
@@ -1180,9 +1183,15 @@ def verse_score(text: str) -> float:
 ASSIGNED_BONUS = 6.0
 
 # How many days one chapter may take in a week. Come, Follow Me often links a
-# long consecutive run -- the lesson on Job cites all twenty-seven verses of
-# Job 19 -- and without a cap the week reads as one passage dealt out slowly
-# rather than as a walk through the whole assignment.
+# long consecutive run -- the lesson on Job cites verses 1 through 27 of Job
+# 19's twenty-nine -- and without a cap the week reads as one passage dealt out
+# slowly rather than as a walk through the whole assignment.
+#
+# It is what shortens a week when one does run short. Of the 76 full weeks in
+# the last calendar, 74 got their seven; the week on Esther had eight verses
+# worth a day but they sat in five chapters, and the week on Matthew 1; Luke 1
+# had twenty-seven with twenty-four of them in Luke 1 alone. Six days walking a
+# week's whole reading is a better week than seven walking one chapter of it.
 CFM_PER_CHAPTER = 2
 
 # The score a verse needs to be worth one of the week's days. Below this the
@@ -1351,13 +1360,15 @@ def build_cfm_weeks(manual: str, year: int) -> list[dict]:
 # source 3 -- General Conference quotes
 # --------------------------------------------------------------------------
 
-# A full conference is a little under forty talks. Requiring most of them
-# stops a half-posted conference from being chosen while it is still going up.
+# A full conference is about forty talks -- 41 in April 2026, 40 the October
+# before it. Requiring half of them stops a half-posted conference from being
+# chosen while it is still going up.
 CONFERENCE_MIN_TALKS = 20
 
 # Speaker photos are saved into the repository rather than hot-linked, so a
 # page view still contacts nobody but the host serving the site. The card shows
-# one at up to 240 CSS pixels wide, so 480 stays sharp on a 2x display.
+# one at up to 17rem -- 272 CSS pixels -- so 480 is just under twice the width
+# it is displayed at, which holds up on a 2x display.
 PORTRAIT_WIDTH = 480
 
 
@@ -1572,9 +1583,10 @@ PROMISE = re.compile(
 # closing can be the only thing short enough to quote at all: refusing every
 # one of them cost Elder Walker's talk its every quote, and his testimony that
 # "as we obey the Savior's voice and keep our covenants -- even by small and
-# quiet acts -- we become His peculiar treasure" with it. So a closing is
-# judged on what it says with the formula set aside, and those that survive are
-# ranked below everything else in their talk rather than above it.
+# quiet sacrifices each day -- we will feel His love more deeply and receive His
+# guidance more clearly" with it. So a closing is judged on what it says with
+# the formula set aside, and those that survive are ranked below everything else
+# in their talk rather than above it.
 BENEDICTION = re.compile(r"\bamen\b\W*$", re.I)
 
 
