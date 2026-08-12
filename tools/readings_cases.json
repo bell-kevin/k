@@ -326,6 +326,114 @@
       "text": "Adam fell that men might be; and men are, that they might have joy."
     },
     {
+      "reference": "Moroni 8:23",
+      "path": "bofm/moro/8",
+      "verse": 23,
+      "verdict": "refuse",
+      "ruled": true,
+      "why": "'it is mockery' is the baptising of little children, back in 8:22. Reported as broken: the verse calls something a mockery and never says what.",
+      "text": "But it is mockery before God, denying the mercies of Christ, and the power of his Holy Spirit, and putting trust in dead works."
+    },
+    {
+      "reference": "Mosiah 15:23",
+      "path": "bofm/mosiah/15",
+      "verse": 23,
+      "verdict": "refuse",
+      "ruled": true,
+      "why": "'They are raised' -- who is raised is the whole question, and 15:24 is where it is answered. Reported as broken.",
+      "text": "They are raised to dwell with God who has redeemed them; thus they have eternal life through Christ, who has broken the bands of death."
+    },
+    {
+      "reference": "Helaman 7:18",
+      "path": "bofm/hel/7",
+      "verse": 18,
+      "verdict": "refuse",
+      "ruled": false,
+      "why": "'It is because you have hardened your hearts' answers a question asked in 7:17.",
+      "text": "It is because you have hardened your hearts; yea, ye will not hearken unto the voice of the good shepherd; yea, ye have provoked him to anger against you."
+    },
+    {
+      "reference": "4 Nephi 1:11",
+      "path": "bofm/4-ne/1",
+      "verse": 11,
+      "verdict": "refuse",
+      "ruled": false,
+      "why": "'they were married, and given in marriage, and were blessed' -- done to them, never by them, and nobody named.",
+      "text": "And they were married, and given in marriage, and were blessed according to the multitude of the promises which the Lord had made unto them."
+    },
+    {
+      "reference": "1 Nephi 3:20",
+      "path": "bofm/1-ne/3",
+      "verse": 20,
+      "verdict": "refuse",
+      "ruled": false,
+      "why": "'And also that we may preserve' -- a stacked conjunction in front of the fragment, and what is preserved for is back in 3:19. Ruled a close call rather than a clear one: a reader who knows the chapter takes 'them' as everyone after Lehi and loses nothing. It is refused because the site is read by people who do not have 3:19 in front of them; if it were ever only for its author, this case is the one to revisit.",
+      "text": "And also that we may preserve unto them the words which have been spoken by the mouth of all the holy prophets, which have been delivered unto them by the Spirit and power of God, since the world began, even down unto this present time."
+    },
+    {
+      "reference": "Genesis 15:14",
+      "path": "ot/gen/15",
+      "verse": 14,
+      "verdict": "refuse",
+      "ruled": true,
+      "why": "'And also that nation, whom they shall serve' -- which nation, and whose seed serves it, are both back in 15:13. Ruled on after the pattern refused it: the reading is right even though 'that' is a determiner here.",
+      "text": "And also that nation, whom they shall serve, will I judge: and afterward shall they come out with great substance."
+    },
+    {
+      "reference": "Mosiah 7:20",
+      "path": "bofm/mosiah/7",
+      "verse": 20,
+      "verdict": "keep",
+      "ruled": true,
+      "why": "'And again, that same God has brought our fathers out' -- 'that' is a determiner here, and the verse is a whole sentence. Ruled a good reading alone: 'that same God' resolves on sight and wants nothing from 7:19.",
+      "text": "And again, that same God has brought our fathers out of the land of Jerusalem, and has kept and preserved his people even until now; and behold, it is because of our iniquities and abominations that he has brought us into bondage."
+    },
+    {
+      "reference": "Alma 53:21",
+      "path": "bofm/alma/53",
+      "verse": 21,
+      "verdict": "keep",
+      "ruled": false,
+      "why": "'they were men of truth and soberness' names who they are; 'men' is a noun, not the participle it is spelled like.",
+      "text": "Yea, they were men of truth and soberness, for they had been taught to keep the commandments of God and to walk uprightly before him."
+    },
+    {
+      "reference": "Psalm 118:8",
+      "path": "ot/ps/118",
+      "verse": 8,
+      "verdict": "keep",
+      "ruled": false,
+      "why": "The placeholder 'it' is filled by the infinitive after it: 'It is better to trust in the Lord'.",
+      "text": "It is better to trust in the Lord than to put confidence in man."
+    },
+    {
+      "reference": "Hebrews 10:31",
+      "path": "nt/heb/10",
+      "verse": 31,
+      "verdict": "keep",
+      "ruled": false,
+      "why": "Same shape: 'It is a fearful thing to fall into the hands of the living God'.",
+      "text": "It is a fearful thing to fall into the hands of the living God."
+    },
+    {
+      "reference": "Acts 2:17",
+      "path": "nt/acts/2",
+      "verse": 17,
+      "verdict": "keep",
+      "ruled": false,
+      "why": "'it shall come to pass' carries what follows without a complementiser to mark it.",
+      "text": "And it shall come to pass in the last days, saith God, I will pour out of my Spirit upon all flesh: and your sons and your daughters shall prophesy, and your young men shall see visions, and your old men shall dream dreams:"
+    },
+    {
+      "reference": "Romans 14:11",
+      "path": "nt/rom/14",
+      "verse": 11,
+      "verdict": "keep",
+      "ruled": false,
+      "why": "'it is written' -- the 'it' is the quotation after the comma.",
+      "text": "For it is written, As I live, saith the Lord, every knee shall bow to me, and every tongue shall confess to God."
+    },
+    {
       "reference": "Alma 34:32",
       "path": "bofm/alma/34",
       "verse": 32,
