@@ -57,9 +57,10 @@ jobs:
       - name: Check where the links land
         run: python tools/test_links.py
 
-      # A full refetch is ~350 requests, so it runs only on the twice-weekly
-      # cron or when asked for. Every other run just re-renders today's page
-      # from the calendar already in the repository.
+      # A full refetch is ~1,100 requests -- the runner starts with no response
+      # cache, so every one of them goes out -- and it runs only on the
+      # twice-weekly cron or when asked for. Every other run just re-renders
+      # today's page from the calendar already in the repository.
       - name: Refetch readings calendar
         if: github.event.schedule == '0 9 * * 1,4' || inputs.refetch
         run: python tools/build_daily.py --days 730
