@@ -402,7 +402,14 @@ def reads_as_a_reading(text: str) -> bool:
     # A whole sentence, but pointing out of itself -- see DANGLING_OPENER. The
     # lead-in comes off first so the test looks at the verse's subject rather
     # than at the conjunction tying it to the last one.
-    if DANGLING_OPENER.match(LEAD_IN.sub("", text)):
+    opening = LEAD_IN.sub("", text)
+    if DANGLING_OPENER.match(opening):
+        return False
+    # An "it" standing in for a clause the verse never supplies.
+    if unfilled_it(opening):
+        return False
+    # A "they" the verse only ever has things done to.
+    if UNANCHORED_PLURAL.match(opening):
         return False
     # A "he" the verse never answers, unless it arrives at a conviction of its
     # own: "Though he slay me, yet will I trust in him" is remembered for the
@@ -756,8 +763,24 @@ NARRATIVE_OPENER = re.compile(
 # that began in the verse before it -- "That ye may not be cursed with a sore
 # cursing", "Whom I shall see for myself". No amount of doctrine in the rest of
 # it makes it a reading, so this is a rejection rather than a penalty.
+#
+# The conjunction in front of it can be stacked, which one word of allowance
+# missed: "And also that we may preserve unto them the words which have been
+# spoken by the mouth of all the holy prophets" is 1 Nephi 3:20, and the reason
+# it is a reading in nobody's hands is that the sentence saying what it is that
+# "we may preserve" for is 3:19. So one additive adverb is allowed after the
+# conjunction as well.
+#
+# That allowance is where "that" stops being reliable, though, because the
+# extra step reaches verses using it as a determiner rather than to open a
+# clause: "And again, that same God has brought our fathers out of the land of
+# Jerusalem" is a whole sentence with a subject. Only the second step is
+# guarded, so a single conjunction still decides these the way it always has.
 FRAGMENT_OPENER = re.compile(
-    r"^(?:and|but|now|yea|wherefore|therefore)?[,\s]*(that|which|whom|whose)\b", re.I)
+    r"^(?:and|but|now|yea|wherefore|therefore)?[,\s]*"
+    r"(?:(?:also|again|moreover|likewise)\b[,\s]*(?!that\s+(?:same|such|very|"
+    r"great)\b))?"
+    r"(that|which|whom|whose)\b", re.I)
 
 # A verse that only introduces speech -- "Then Job answered and said," -- is
 # the label on the reading, not the reading.
@@ -828,6 +851,93 @@ DANGLING_OPENER = re.compile(
     r"|(?:said|answered|spake|replied)\b(?=\s*[,:;]|\s+(?:he|she|they|i|we|it|"
     r"unto)\b)"
     r")", re.I)
+
+# The exemption above lets every "it is" through, and half of them should not
+# be. An "it" at the head of a verse is doing one of two opposite jobs, and
+# which one decides whether the verse can be read cold at all.
+#
+# It is a placeholder when the verse goes on to say what it stands for: "It is
+# better *that* one man should perish than that a nation should dwindle in
+# unbelief", "it is expedient *that* an atonement should be made", "It is a
+# fearful thing *to fall* into the hands of the living God", "It is better *to
+# trust* in the Lord than to put confidence in man". None of those wants
+# anything from outside, because the "it" is not about anything until the
+# clause after it arrives -- which it does, in the same sentence.
+#
+# It is a pointer when the clause never comes. "But it is mockery before God,
+# denying the mercies of Christ, and the power of his Holy Spirit, and putting
+# trust in dead works" is Moroni 8:23, and the "it" is the baptising of little
+# children, back in 8:22; the verse never says so. As a day's reading it calls
+# something a mockery without ever saying what, which is how it was reported.
+# Helaman 7:18 is the same word answering a question asked in Helaman 7:17 --
+# "It is because you have hardened your hearts" -- and 2 Nephi 2:12's "it must
+# needs have been created for a thing of naught" is the creation 2:11 spent
+# itself describing.
+#
+# So the verse is read as far as its first full stop and the placeholder has to
+# be filled inside it. Two constructions fill it without a complementiser and
+# are named directly: "it shall come to pass", which is this book's way of
+# saying that what follows happened and always carries what follows with it;
+# and "it is written", where the "it" is the quotation that comes after the
+# comma. A negated opener is left alone for the reason "this is not all" is --
+# "and it mattereth not--we trust God will deliver us" is a turn in the
+# argument rather than a subject, and the teaching lands after it.
+IT_OPENER = re.compile(r"^it\b", re.I)
+
+QUOTING_IT = re.compile(
+    r"^it\s+(?:is|was|hath\s+been|has\s+been)\s+(?:written|said|spoken)\b", re.I)
+
+# The "to" here has to be the infinitive that fills the placeholder and not the
+# preposition that merely points somewhere, so the words a prepositional "to"
+# takes are refused the job: "according to their faith" fills nothing.
+IT_FILLED = re.compile(
+    r"\b(?:that|if|when|what|whether|which|who|whom|lest)\b"
+    r"|\bto\s+(?!the|a|an|his|her|their|its|my|thy|your|our|this|that|these|"
+    r"those|him|them|me|us|you|thee|it|all|every|any|no|one|whom|which|what)\w"
+    r"|\bcome\s+to\s+pass\b"
+    r"|\bnot\b", re.I)
+
+FIRST_SENTENCE = re.compile(r"^[^;.—]*")
+
+
+def unfilled_it(opening: str) -> bool:
+    """Whether an "it" opening a verse stands for something outside it.
+
+    `opening` is the verse with its lead-in already off, so "And it is ..." and
+    "it is ..." are the same question.
+    """
+    if not IT_OPENER.match(opening) or QUOTING_IT.match(opening):
+        return False
+    return not IT_FILLED.search(FIRST_SENTENCE.match(opening).group(0))
+
+
+# The plural's own version of the same fault. `unanchored_singular` below
+# leaves every plural alone, on the ground that a reader supplies "people who
+# do this" -- and that holds exactly as far as the verse says what "this" is.
+# "Nevertheless they did fast and pray oft, and did wax stronger and stronger
+# in their humility" never says who they were and does not need to, because
+# what they did is the whole of the reading and anyone can do it.
+#
+# A verse that only reports what was done to them supplies nothing to stand in
+# for the name. "They are raised to dwell with God who has redeemed them; thus
+# they have eternal life through Christ, who has broken the bands of death" is
+# Mosiah 15:23, and who is raised is the entire question -- the answer is in
+# 15:24, which this build already refuses for pointing at it ("and these are
+# they that have died before Christ came, in their ignorance"). Alone, the
+# verse promises the resurrection to somebody it declines to name.
+#
+# Two predicates are let through because they answer the pronoun themselves. A
+# verse that says what they were *called* has named them -- "And they were
+# called the people of God", "they were called the church of God" -- and the
+# four plurals that end in the participle's own letters are nouns doing the
+# same work: "they were men of truth and soberness" says who they are as
+# plainly as a name would.
+UNANCHORED_PLURAL = re.compile(
+    r"^they\s+"
+    r"(?:are|is|was|were|be|been|shall\s+be|will\s+be|would\s+be|should\s+be|"
+    r"(?:have|had|hath)\s+been)\s+"
+    r"(?!(?:called|named|men|women|children|brethren)\b)"
+    r"\w+(?:ed|en)\b", re.I)
 
 # The third way out of itself, and the one that decides most verses: a
 # third-person *singular* pronoun with nobody in the verse to mean.

@@ -82,24 +82,43 @@ journeying in the wilderness — or if it is not a whole thought to begin with:
 - a verse opening on a relative pronoun — *That ye may not be cursed with a
   sore cursing…*, *Whom I shall see for myself…* — is the back half of a
   sentence that began in the verse before, and no amount of doctrine in the
-  rest of it makes it a reading;
+  rest of it makes it a reading. The conjunction in front can be stacked, and
+  one word of allowance for it missed *And also that we may preserve unto them
+  the words which have been spoken by the mouth of all the holy prophets* — 1
+  Nephi 3:20, whose sentence says what they are preserved *for* in 3:19. Two
+  words are allowed now, guarded, because that second step reaches *that* used
+  as a determiner: *And again, that same God has brought our fathers out of the
+  land of Jerusalem* is a whole sentence with a subject in it;
 - a verse that only introduces the speech in the next one — *Then Job answered
   and said,* — is the label, not the reading;
 - a verse with **a "he" it never answers**. This is the one that decides most
   verses, and **number is what it turns on.**
 
-  A plural reads as generic however it got there. *Nevertheless they did fast
-  and pray oft, and did wax stronger and stronger in their humility, and firmer
-  and firmer in the faith of Christ* never says who *they* were and loses
-  nothing by it: a reader supplies "people who do this" and the verse means
-  exactly what it meant. A singular cannot be read that way. *Behold, he
+  A plural reads as generic when the verse says what they *do*. *Nevertheless
+  they did fast and pray oft, and did wax stronger and stronger in their
+  humility, and firmer and firmer in the faith of Christ* never says who *they*
+  were and loses nothing by it: a reader supplies "people who do this" and the
+  verse means exactly what it meant. That holds exactly as far as there is a
+  "this" to supply. **A verse that only reports what was done to them** offers
+  nothing to stand in for the name — *They are raised to dwell with God who has
+  redeemed them; thus they have eternal life through Christ* is Mosiah 15:23,
+  and who is raised is the whole question. The answer is 15:24, *these are they
+  that have died before Christ came, in their ignorance*, which this build
+  already refuses for pointing at it. Alone, the verse promises the
+  resurrection to somebody it declines to name. What is let through is the
+  predicate that answers the pronoun itself: a verse saying what they were
+  *called* has named them — *And they were called the people of God* — and so
+  has *they were men of truth and soberness*.
+
+  A singular cannot be read either way. *Behold, he
   offereth himself a sacrifice for sin, to answer the ends of the law* is
   doctrine as plain as any in the book, and still lands wrong on anyone who
   does not already know that *he* is Christ — which 2 Nephi 2:6 says and 2
   Nephi 2:7 does not.
 
-  So a plural is left alone, and **a singular has to find its referent inside
-  its own verse.** Position is the whole of the test. *And the Lord did pour
+  So a plural is asked only whether the verse ever has them act, and **a
+  singular has to find its referent inside its own verse.** Position is the
+  whole of the test. *And the Lord did pour
   out his Spirit upon them* names the Lord before it says *his*, while *And
   they rehearsed unto his father all that had happened unto them; and his
   father rejoiced, for he knew that it was the power of God* reaches *God* only
@@ -164,6 +183,26 @@ journeying in the wilderness — or if it is not a whole thought to begin with:
   your souls in your closets, and your secret places, and in your wilderness*
   wants nothing from the verse before it.
 
+  An **"it" at the head of a verse** is doing one of two opposite jobs, and
+  which one decides whether the verse survives. It is a placeholder when the
+  verse goes on to say what it stands for — *It is better **that** one man
+  should perish than that a nation should dwindle in unbelief*, *It is a
+  fearful thing **to fall** into the hands of the living God*, *It is better
+  **to trust** in the Lord than to put confidence in man*. Nothing outside the
+  verse is wanted, because the *it* is not about anything until the clause
+  after it arrives.
+
+  It is a pointer when that clause never comes. *But it is mockery before God,
+  denying the mercies of Christ, and the power of his Holy Spirit, and putting
+  trust in dead works* is Moroni 8:23, and the *it* is the baptising of little
+  children, back in 8:22; as a day's reading it calls something a mockery and
+  never says what. Helaman 7:18 is the same word answering a question asked in
+  7:17 — *It is because you have hardened your hearts*. So the verse is read as
+  far as its first full stop and the placeholder has to be filled inside it.
+  Two constructions fill it without a word to mark them and are named directly:
+  *it shall come to pass*, which always carries what follows with it, and *it
+  is written*, where the *it* is the quotation after the comma.
+
   The lead-in comes off before any of this is asked, since scripture is
   punctuated as one continuous telling and nearly every verse opens by tying
   itself to the last — *And it came to pass that…* is scaffolding, not subject.
@@ -225,7 +264,7 @@ And against it:
 - **−2.5 for a verse that is nothing but a question**, which the verse after it
   answers and the reader is left holding.
 
-A verse needs 3.0 to be quotable at all. **1,863 of the 6,604 clear that bar**,
+A verse needs 3.0 to be quotable at all. **1,852 of the 6,604 clear that bar**,
 which is more than four years of reading and takes in a lot that merely
 scraped through, so the ordinary days draw on **the best 500** instead (the last
 build's cutoff was 6.7). Five hundred is chosen deliberately: it is more than a
