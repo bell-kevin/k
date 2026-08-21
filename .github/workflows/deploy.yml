@@ -53,7 +53,9 @@ jobs:
 
       # A link has to open the verse where a reader can see it. The study
       # reader draws its toolbar over the top of the page and offsets nothing,
-      # so where a link scrolls to is the site's problem to get right.
+      # so where a link scrolls to is the site's problem to get right. This
+      # holds the rule to the chapters it was ruled on and counts how much of
+      # the calendar it is currently failing.
       - name: Check where the links land
         run: python tools/test_links.py
 
@@ -68,6 +70,14 @@ jobs:
       - name: Render today's page
         if: github.event.schedule != '0 9 * * 1,4' && !inputs.refetch
         run: python tools/build_daily.py --render-only
+
+      # The run above is the only one that writes links, so the calendar it
+      # wrote is checked before it is committed or served -- the run before the
+      # build could only ever audit the calendar of the run before it, which is
+      # how a fortnight of clipped links went out green.
+      - name: Check where the rebuilt links land
+        if: github.event.schedule == '0 9 * * 1,4' || inputs.refetch
+        run: python tools/test_links.py
 
       # Bookkeeping only: the deploy below uses the working tree either way, so
       # losing a push race must not cost us the deployment.

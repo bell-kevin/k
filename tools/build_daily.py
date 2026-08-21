@@ -196,19 +196,52 @@ def passage_anchor(nums: list[int]) -> str:
 #
 # How far above is a compromise between two ways of being wrong: too little and
 # the toolbar still clips the verse, too much and the run-up pushes the verse
-# off the bottom instead. Two hundred characters is about six lines on a phone
-# -- comfortably deeper than the toolbar reaches, and shallow enough that even
-# a long verse still opens well inside the screen.
+# off the bottom instead. Both sides of that are measured against one screen of
+# the reader, so the screen is what they are written in.
 #
-# The ceiling is the far side of the same thought, and it is the higher number
-# because one paragraph back is the least that helps at all: a link is allowed
-# to overshoot the cushion rather than not clear the toolbar. What it is not
-# allowed to do is land on a paragraph long enough to fill the screen by
-# itself, which would leave the verse below the fold -- worse than the clipping
-# this is here to fix.
-SCROLL_CUSHION = 200
-SCROLL_CEILING = 400
-SCROLL_LOOKBACK = 2
+# A phone shows about twenty lines of body text between the chapter toolbar
+# drawn across the top and the chapter-nav bar across the bottom, and a line
+# holds about thirty-four characters: Alma 57:28 is 271 characters and takes
+# eight lines of it. Characters stand in for height because lengths are what
+# the builder has -- it ignores the gap between paragraphs, worth about half a
+# line each, which is why the two limits below are drawn inside the screen
+# rather than up against it.
+SCREEN_LINES = 20
+LINE = 34
+
+# The toolbar covers the top two lines of the page. Anything the reader is
+# meant to see has to start below them.
+TOOLBAR_LINES = 2
+
+# And the other end: the least of a quoted paragraph that can land on screen
+# and still count as having arrived -- enough for the highlight to be visible
+# and for the paragraph to have plainly begun.
+LANDING_LINES = 3
+
+# So the walk back stops as soon as it has the toolbar covered with a line to
+# spare. It is a floor to reach, not a depth to fill: given a choice between a
+# cushion that clears the toolbar and a deeper one, the shallower is better,
+# because it opens the verse nearer the top of the screen. At six lines this
+# was overshooting -- 1 Nephi 3:7 walked past a verse that left it 118
+# characters clear to take one that left it 380.
+SCROLL_CUSHION = (TOOLBAR_LINES + 1) * LINE
+
+# The far side is where the run-up would push the quoted paragraph off the
+# bottom: it may fill the screen down to the last few lines and no further.
+# Past that a link gives up and keeps its own anchor, taking the clipping,
+# because a verse cut off at the top is at least visibly there.
+#
+# This is the number that decides how often that giving up happens, and at 400
+# it cut straight through the middle of how long a paragraph actually runs.
+# Alma 57:26 is 402 characters, so Alma 57:27 was clipped over two characters'
+# worth of margin -- along with one link in twenty across the calendar, and a
+# fifth of the conference quotes, whose paragraphs are longer than verses.
+SCROLL_CEILING = (SCREEN_LINES - LANDING_LINES) * LINE
+
+# How far back the walk may go. The ceiling is what actually bounds it; this
+# only stops a chapter of one-line verses from being walked a long way up for a
+# cushion the ceiling would allow but no reader asked for.
+SCROLL_LOOKBACK = 4
 
 
 def scroll_fragment(page: list[tuple[str, str]], index: int) -> str:
@@ -217,6 +250,11 @@ def scroll_fragment(page: list[tuple[str, str]], index: int) -> str:
     `page` is a page's paragraphs in the order they are published, each as its
     anchor id and its text; `index` picks out the one being quoted. The answer
     names an earlier paragraph, whose text becomes what the toolbar covers.
+
+    It walks back from the quoted paragraph and stops on the first one that
+    leaves SCROLL_CUSHION characters standing above it -- one step usually,
+    more where the verses run short -- and never takes a step that would put
+    more than SCROLL_CEILING above it.
 
     Two cases get no cushion, for opposite reasons. A paragraph with nothing
     published above it gets no fragment at all, which leaves the browser at the
@@ -230,13 +268,10 @@ def scroll_fragment(page: list[tuple[str, str]], index: int) -> str:
         return ""
     anchor = index
     cushion = 0
-    while anchor > 0 and index - anchor < SCROLL_LOOKBACK:
+    while (anchor > 0 and cushion < SCROLL_CUSHION
+           and index - anchor < SCROLL_LOOKBACK):
         above = cushion + len(page[anchor - 1][1])
-        # The first step back is the one that clears the toolbar, so it gets
-        # the ceiling to spend. The steps after it exist for the chapters of
-        # one-line verses, where one verse of cushion is barely a cushion at
-        # all, and they are taken only while they stay inside what was wanted.
-        if above > (SCROLL_CEILING if anchor == index else SCROLL_CUSHION):
+        if above > SCROLL_CEILING:
             break
         anchor -= 1
         cushion = above
