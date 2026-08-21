@@ -647,11 +647,26 @@ little of what comes before it for context. The highlight has not moved.
 How far back to aim is a compromise between two ways of being wrong. Too little
 and the toolbar still clips the verse; too much and the run-up above pushes the
 verse off the bottom instead, which is worse — a verse cut off at the top is at
-least visibly there. So the builder walks back through the verses actually
-published above the one being quoted, adding up their length, and stops at
-about two hundred characters, roughly six lines on a phone. In a chapter of
-long verses that is one verse back. In a chapter of one-line verses it is two,
-which is what keeps a two-line cushion from being no cushion at all.
+least visibly there. Both sides of that are measured against one screen of the
+reader, so a screen is what the rule is written in: a phone shows about twenty
+lines of body text between the toolbar at the top and the chapter-nav bar at
+the bottom, and a line holds about thirty-four characters. Alma 57:28 is 271
+characters and takes eight lines of it.
+
+From there the two limits fall out. The toolbar covers the top two lines, so a
+cushion has to be deeper than that to be worth anything, and the builder walks
+back through the verses actually published above the one quoted until it has
+three lines of them. It stops there rather than filling the screen, because a
+cushion is a floor to reach and not a depth to fill: given a verse that leaves
+the quote 118 characters clear and one that leaves it 380, the shallower one is
+better, since it opens the quote nearer the top. In a chapter of long verses
+that is one verse back. In a chapter of one-line verses it is three or four,
+which is what keeps a one-line cushion from being no cushion at all.
+
+The other limit is where the run-up would push the quote off the bottom: it may
+fill the screen down to the last three lines and no further. Three lines is the
+least that counts as arriving — enough for the highlight to be on screen and
+for the paragraph to have plainly begun.
 
 Two cases get no cushion, for opposite reasons:
 
@@ -659,9 +674,14 @@ Two cases get no cushion, for opposite reasons:
   stays at the top of the page — which is where that verse already is, below
   the chapter heading rather than beneath the toolbar. Scrolling it to the top
   would be the one move guaranteed to clip it.
-- **A verse whose neighbour above is long enough to fill the screen** keeps its
+- **A verse whose neighbour above would fill the screen on its own** keeps its
   own anchor and takes the clipping, because being cut off at the top beats
-  starting below the bottom.
+  starting below the bottom. This is the escape hatch, and it is meant to be
+  rare: 4 links out of 1,141 across the two-year calendar. It has been the
+  other way round. When the limit was a flat 400 characters it cut straight
+  through the middle of how long a paragraph actually runs — Alma 57:26 is 402
+  — and 60 links were quietly taking the clipping, a fifth of the conference
+  quotes among them, because a talk's paragraphs are longer than verses.
 
 The verse above is the verse published above, which is not always the verse a
 number below. A Joseph Smith Translation chapter prints only the verses it
@@ -874,12 +894,26 @@ the verse, aim too far back and the run-up pushes the verse below the fold.
 `tools/test_links.py` is written in those terms rather than in fragments — each
 case says how much text a link may leave above its verse, so the test still
 means something if the cushion is ever retuned, and it prints the fragment each
-case produced so a change inside the bounds is still legible in the diff. It
-runs in CI beside the reading rules.
+case produced so a change inside the bounds is still legible in the diff.
 
 A chapter is given to it as its verse *lengths* rather than its verse text,
 because only the lengths decide where a link lands — which is also why this one
 needs no committed corpus the way `test_readings.py` does.
+
+Cases alone turned out not to be enough. Seven of them passed for a fortnight
+while one link in twenty shipped clipped, because a case can only fail on a
+chapter someone thought to write down, and the shapes that broke were ordinary
+ones nobody had. So the same script then reads `data/daily.json` — the calendar
+actually being served — and counts the links that gave up and kept the quoted
+paragraph's own anchor. A few of those are unavoidable; a great many mean the
+rule is mistuned, and the count fails the build past 3% of the calendar. It
+cannot tell one from the other, since that would need the page text, but it can
+tell how many there are, which is the number that moves when this breaks.
+
+It runs in CI beside the reading rules, and again after a refetch, since the
+refetch is the only step that writes links — running it only beforehand audits
+the calendar of the run before, which is how the fortnight of clipped links
+went out green.
 
 ## Licensing, and what the licence does not cover
 
