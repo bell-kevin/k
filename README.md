@@ -51,6 +51,8 @@ should not have to sign in to get it either.
 | `tools/build_daily.py` | The builder: fetches, chooses, writes the calendar, renders the page. |
 | `tools/test_readings.py` | Checks the rules that decide a reading against verses ruled on by hand. |
 | `tools/readings_cases.json` | Those verses, as published. **Generated** — see `--refresh`. |
+| `tools/test_quotes.py` | Checks the rules that decide a quote against paragraphs ruled on by hand. |
+| `tools/quote_cases.json` | Those paragraphs, as published. **Generated** — see `--refresh`. |
 | `tools/test_links.py` | Checks that a link opens its verse where a reader can see it. |
 | `tools/template.html` | The page itself, with placeholders where the day's readings go. |
 | `data/daily.json` | The prebuilt calendar — two years of daily picks, about 1 MB. |
@@ -436,6 +438,19 @@ things that only makes sense next to the paragraph before it:
   pool nothing, finding no paragraph the rest of the test was not already
   turning down;
 - an adverb opener — *Tragically,…* almost always continues a story;
+- a demonstrative pointing at an occasion the paragraph never names — *remember
+  that day in your life*, *at that moment*, *these stories*. A talk is built out
+  of stories, and the paragraph after a story refers back to it instead of
+  retelling it, so this is the commonest way a conference paragraph reaches out
+  of itself. What fills one is the paragraph saying which occasion it means: the
+  word itself earlier in its own text (*The next morning … at church that
+  morning*), a clause or an *of* after it (*that day when a priesthood leader
+  felt impressed*, *that moment of weakness*), or an occasion still ahead, which
+  no story can already have told (*That day will be filled with joy for the
+  righteous*). *This day* and *this moment* are left alone: they are the ones
+  the speaker is standing in. Words for something already told — *experience*,
+  *story*, *visit* — cannot mean now, so *this experience* and *these stories*
+  point back exactly as *that experience* does;
 - storytelling rather than counsel, spotted by a subject-and-past-tense-verb
   pair in the opening — *he told*, *we went*, *I felt*, *she saw*. The verbs are
   named one by one rather than matched as any past tense, because "-ed" alone
@@ -520,7 +535,7 @@ that a strong quote comes round twice in six months than that one of those runs
 once.
 
 The pool is then shuffled and spread by speaker, so the same voice does not turn
-up two days running. **The April 2026 conference yields 133 quotes from 34 talks
+up two days running. **The April 2026 conference yields 131 quotes from 34 talks
 by 32 speakers**, so a quote comes round again about every four months. Raise
 `--conferences` if you would rather trade freshness for variety.
 
@@ -898,6 +913,27 @@ python tools/test_readings.py --verify   # confirm the committed text is still w
 
 Both go through the same fetch and the same parser the builder uses, so what is
 tested is what a card would show.
+
+### Checking the rules that decide a quote
+
+```sh
+python tools/test_quotes.py              # no network, no cache needed
+```
+
+The same thing for the General Conference card, and held to the same
+discipline. `tools/quote_cases.json` holds conference paragraphs that have been
+ruled on either way, and `--refresh` and `--verify` fill in and check their text
+from the study API exactly as the readings cases do — a paragraph is named by
+its talk's URI and its own id, which is the `id=` already in the link every
+quote card builds.
+
+Its cases exist because this card's rules cut as fine as the verses' do. A
+pattern written to refuse *remember that day in your life* also wants to refuse
+*That day will be filled with joy for the righteous*, which needs no paragraph
+before it; one written to keep *at church that morning* also keeps the *that* of
+*the perspective that time gives*, which is not a pointer at all. Both sides of
+every line are pinned, so a later widening of the rule fails here rather than in
+the calendar.
 
 ### Checking where a link lands
 

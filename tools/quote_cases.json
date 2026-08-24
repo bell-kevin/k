@@ -1,0 +1,122 @@
+{
+  "note": "Conference paragraphs as the study API publishes them. Do not hand-edit \"text\": run `python tools/test_quotes.py --refresh`. A paragraph's id is the `id=` in the link a card builds.",
+  "cases": [
+    {
+      "reference": "Neil L. Andersen, \"Eternal Marriage Is an Eternal Journey\" (April 2026), p_ozqOI",
+      "uri": "/general-conference/2026/04/55andersen",
+      "paragraph": "p_ozqOI",
+      "verdict": "refuse",
+      "ruled": true,
+      "why": "'that day' is the day the paragraph before it describes -- kneeling across the altar from Kathy in a holy temple of God. Alone on a card it asks the reader to remember a day it never names. The paragraph reported as broken.",
+      "text": "To you in this vast worldwide congregation who lovingly remember that day in your life, I speak especially to you."
+    },
+    {
+      "reference": "Neil L. Andersen, \"Eternal Marriage Is an Eternal Journey\" (April 2026), p_nioDZ",
+      "uri": "/general-conference/2026/04/55andersen",
+      "paragraph": "p_nioDZ",
+      "verdict": "refuse",
+      "why": "The same fault one paragraph further on. 'At that moment, kneeling across the altar' points back at the same day, and the talk had both paragraphs in the calendar.",
+      "text": "At that moment, kneeling across the altar, we have a growing realization of the depth of our commitment to God and to each other. The sacred ordinance binds us together with our eternal companion and with God. We solemnly vow to keep the covenants, and the Lord promises us, as we are faithful, unspeakable blessings in mortality and beyond, including thrones, powers, and dominions in the eternal world."
+    },
+    {
+      "reference": "Taniela B. Wakolo, \"Come unto Christ--Together\" (April 2026), p_uyAJC",
+      "uri": "/general-conference/2026/04/57wakolo",
+      "paragraph": "p_uyAJC",
+      "verdict": "refuse",
+      "why": "'These stories are not about statistics.' A story cannot be the one the speaker is standing in, so 'these' points backwards exactly as 'those' would. Read cold, there are no stories.",
+      "text": "Brothers and sisters, God keeps His promises—but in His timing. These stories are not about statistics. They are about souls."
+    },
+    {
+      "reference": "Emily Belle Freeman, \"Best Days and Worst Days\" (April 2026), p_fiYks",
+      "uri": "/general-conference/2026/04/42freeman",
+      "paragraph": "p_fiYks",
+      "verdict": "refuse",
+      "why": "'How do we get through those days?' -- a plural points out of its paragraph as readily as a singular, and which days is the whole question.",
+      "text": "How do we get through those days? The story of Peter teaches us that strength comes as we walk with Christ and hold fast to His eternal truths."
+    },
+    {
+      "reference": "Henry B. Eyring, \"All Will Be Well Because of Temple Covenants\" (April 2024), p8",
+      "uri": "/general-conference/2024/04/18eyring",
+      "paragraph": "p8",
+      "verdict": "refuse",
+      "why": "An earlier conference, so the rule is not read as being about one talk. 'At that moment' is the moment he told his wife that all would be well because of the temple, and that is in the paragraph before.",
+      "text": "At that moment, it was as if the Spirit of the Lord confirmed in our hearts and minds what we both already knew to be true: the sealing ordinances, found only in the house of the Lord and administered by proper priesthood authority, had bound us together as husband and wife, and our children had been sealed to us. There truly was no need to fear, and we were grateful later to learn that our boys were safe."
+    },
+    {
+      "reference": "Amy A. Wright, \"Abide the Day in Christ\" (October 2023), p20",
+      "uri": "/general-conference/2023/10/12wright",
+      "paragraph": "p20",
+      "verdict": "refuse",
+      "why": "'In that moment every family home evening lesson ... mattered.' The moment is the peace that came over her in the paragraph before, and this one never says so.",
+      "text": "In that moment every family home evening lesson, scripture study session, prayer of faith offered, blessing given, testimony shared, covenant made and kept, house of the Lord attended, and Sabbath day observed mattered—oh, how it mattered! It was too late to put oil in our lamps. We needed every single drop, and we needed it right now!"
+    },
+    {
+      "reference": "Russell M. Nelson, \"The Lord Jesus Christ Will Come Again\" (October 2024), p_zKh76",
+      "uri": "/general-conference/2024/10/57nelson",
+      "paragraph": "p_zKh76",
+      "verdict": "keep",
+      "ruled": true,
+      "why": "'That day will be filled with joy for the righteous.' An occasion still ahead is not one a speaker has already narrated, and the day of the Lord is a day every reader can name.",
+      "text": "I bear my solemn witness that Jesus Christ is the Son of God. I am His disciple. I am honored to be His servant. At His Second Coming, “the glory of the Lord shall be revealed, and all flesh shall see it together.” That day will be filled with joy for the righteous!"
+    },
+    {
+      "reference": "Neil L. Andersen, \"The Atoning Love of Jesus Christ\" (October 2025), p_coIZa",
+      "uri": "/general-conference/2025/10/35andersen",
+      "paragraph": "p_coIZa",
+      "verdict": "keep",
+      "ruled": true,
+      "why": "'That moment will come. I testify that it will come.' The same exemption, and the paragraph has already described the moment in its own words.",
+      "text": "As you continue to place your trust in Him, your clouds of darkness and anguished sobbing in the night will be transformed into cascading tears of joy and peace in the morning’s light. “Your sorrow shall be turned into joy. … And your joy no [one] taketh from you.” That moment will come. I testify that it will come."
+    },
+    {
+      "reference": "Eduardo F. Ortega, \"Christ--Author and Finisher of Our Faith\" (April 2026), p_ypdOG",
+      "uri": "/general-conference/2026/04/24ortega",
+      "paragraph": "p_ypdOG",
+      "verdict": "keep",
+      "ruled": true,
+      "why": "'The perspective that time gives' is a relative clause, not a pointer: the 'that' is the object of 'gives' and 'time' is its subject. The one paragraph in the whole conference cache where the exemption is needed, and the reason it takes two signals rather than one.",
+      "text": "In addition to the changes you may have already experienced in your lives and hearts, there is a road ahead for you to “press forward with a steadfastness in Christ” as you endure on the covenant path. In doing so, perhaps you will experience the same as I have; sometimes I need the perspective that time gives to see the refining and perfecting hand of our Savior, Jesus Christ, in my life and in my family’s life."
+    },
+    {
+      "reference": "Steven J. Lund, \"Divine Authority, Sublime Young Men\" (April 2025), p_vqEMC",
+      "uri": "/general-conference/2025/04/22lund",
+      "paragraph": "p_vqEMC",
+      "verdict": "keep",
+      "why": "'No one expected the bishop's family to be at church that morning' -- the paragraph opened on 'The next morning', so it has already said which.",
+      "text": "The next morning their ward members gathered for sacrament meeting filled with compassion, also suffering over the loss of this perfect little girl. No one expected the bishop’s family to be at church that morning, but a couple of minutes before the meeting started, they quietly entered and took their place."
+    },
+    {
+      "reference": "Gregorio E. Casillas, \"God Loves All His Children\" (October 2024), p_m8wzU",
+      "uri": "/general-conference/2024/10/17casillas",
+      "paragraph": "p_m8wzU",
+      "verdict": "keep",
+      "why": "'on that day when a priesthood leader felt impressed for us to visit a mother and a son' -- the clause after it says which day.",
+      "text": "My dear brothers and sisters, on that day when a priesthood leader felt impressed for us to visit a mother and a son that we did not have on our agenda, I proclaim that God knew they needed us. And at the end, I was the one who was ministered to. On that day, I received one of the greatest lessons of the Savior’s love for us."
+    },
+    {
+      "reference": "Ruben V. Alliaud, \"Sons and Daughters of God\" (October 2024), p_daJuY",
+      "uri": "/general-conference/2024/10/55alliaud",
+      "paragraph": "p_daJuY",
+      "verdict": "keep",
+      "why": "'that moment of weakness' -- an 'of' complement says which moment as plainly as a clause does.",
+      "text": "In this context, Satan’s request to worship him may have been only a distraction. A significant temptation for Moses in that moment of weakness was to become confused and believe that he was only a “son of man,” rather than a child of God."
+    },
+    {
+      "reference": "Russell M. Nelson, \"The Lord Jesus Christ Will Come Again\" (October 2024), p_leSJJ",
+      "uri": "/general-conference/2024/10/57nelson",
+      "paragraph": "p_leSJJ",
+      "verdict": "keep",
+      "ruled": true,
+      "why": "'I pray that we will not miss the majesty of this moment!' 'This moment' is the one the speaker is standing in and wants nothing from any paragraph. Pinned so the rule is not later widened from 'that' to 'this' for the words that can mean now.",
+      "text": "My dear brothers and sisters, do you see what is happening right before our eyes? I pray that we will not miss the majesty of this moment! The Lord is indeed hastening His work."
+    },
+    {
+      "reference": "Neil L. Andersen, \"Temples, Houses of the Lord Dotting the Earth\" (April 2024), p25",
+      "uri": "/general-conference/2024/04/55andersen",
+      "paragraph": "p25",
+      "verdict": "keep",
+      "why": "'In this day of confusion and commotion' -- the same deictic 'this', in the other word the rule leaves alone.",
+      "text": "In this day of confusion and commotion, I testify that the temple is His holy house and will help preserve us, protect us, and prepare us for the glorious day when, with all His holy angels, our Savior returns in majesty, power, and great glory. In the name of Jesus Christ, amen."
+    }
+  ]
+}

@@ -408,6 +408,20 @@ def book_name(slug: str) -> str:
     return BOOK_NAMES.get(slug, slug.replace("-", " ").title())
 
 
+def talk_paragraphs(body: str) -> list[tuple[str, str]]:
+    """A conference talk's paragraphs as (id, text), stopping at the endnotes.
+
+    The endnotes are bibliography lines, not anything worth quoting. Every
+    paragraph is returned, including the ones no quote could come from, because
+    a quote's link is aimed at the paragraph above it -- see `scroll_fragment`.
+    """
+    block = re.search(r'<div class="body-block">(.*?)(?:<footer class="notes">|\Z)',
+                      body, re.S)
+    return [(pid, clean(raw)) for pid, raw in
+            re.findall(r'<p [^>]*id="(p[_A-Za-z0-9]+)"[^>]*>(.*?)</p>',
+                       block.group(1) if block else "", re.S)]
+
+
 # --------------------------------------------------------------------------
 # source 1 -- Book of Mormon verses
 # --------------------------------------------------------------------------
@@ -1846,6 +1860,109 @@ def quote_score(text: str) -> float:
     return score
 
 
+# A demonstrative in front of a word for an occasion -- "that day", "at that
+# moment", "this experience" -- is a pointer, and in a conference talk what it
+# points at is nearly always the paragraph before. "To you in this vast
+# worldwide congregation who lovingly remember that day in your life, I speak
+# especially to you" is Elder Andersen's, and the day is the one the paragraph
+# above it describes: kneeling across the altar from Kathy in a holy temple of
+# God. Alone on a card it asks the reader to remember a day it never names, and
+# it was reported for it.
+#
+# This is the fault `unfilled_it` and `unfilled_thus` answer on the scripture
+# cards, in the form a talk takes it. A talk is built out of stories, and the
+# paragraph after a story refers back to it instead of retelling it -- which is
+# why the fault is common enough here to be worth a rule of its own, and why
+# the rule stays on this card. Scripture's "in that day" is the day of the
+# Lord, and a reader supplies it.
+#
+# Two kinds of word are looked at, and not in the same way.
+#
+#   * A word that can mean *now* at a pulpit -- day, morning, moment, time --
+#     points backwards only with "that" or "those". "This day" and "this
+#     moment" are the ones the speaker is standing in, and want nothing from
+#     any paragraph.
+#   * A word for something already told -- experience, story, incident, visit
+#     -- cannot mean now however it is introduced, so "this experience" and
+#     "these stories" point back exactly as "that experience" does. Elder
+#     Wakolo's "These stories are not about statistics. They are about souls"
+#     is the plainest of them: read cold, there are no stories.
+#
+# What fills one is the paragraph saying which occasion it means, and it has
+# three ways to:
+#
+#   * it named the occasion earlier in its own text, in either number -- "The
+#     next morning their ward members gathered ... No one expected the bishop's
+#     family to be at church that morning";
+#   * a clause or an "of" follows and says which -- "on that day when a
+#     priesthood leader felt impressed for us to visit a mother and a son",
+#     "that moment of weakness";
+#   * the occasion has not happened yet. "That day will be filled with joy for
+#     the righteous", "That moment will come" -- what is still ahead is not
+#     anything a speaker has already narrated, and the day of the Lord is a day
+#     every reader can name.
+OCCASION_NOW = (r"day|days|morning|mornings|evening|evenings|night|nights|"
+                r"moment|moments|time|times|hour|hours|season|seasons")
+OCCASION_TOLD = (r"experience|experiences|story|stories|incident|incidents|"
+                 r"episode|episodes|encounter|encounters|conversation|"
+                 r"conversations|errand|errands|occasion|occasions|event|"
+                 r"events|visit|visits|trip|trips|meeting|meetings")
+
+# The clause or the complement that says which occasion is meant.
+OCCASION_FILLED = r"(?!\s+(?:when|where|which|who|whom|that|of|in\s+which)\b)"
+
+POINTING_BACK = re.compile(
+    rf"\b(?:that|those)\s+({OCCASION_NOW}|{OCCASION_TOLD})\b{OCCASION_FILLED}"
+    rf"|\b(?:this|these)\s+({OCCASION_TOLD})\b{OCCASION_FILLED}", re.I)
+
+# An occasion still ahead of the reader, which no story can already have told.
+OCCASION_AHEAD = re.compile(r"^\s+(?:will|shall)\b", re.I)
+
+# "That" in front of one of these words is not always a determiner. "Sometimes
+# I need the perspective that time gives to see the refining and perfecting
+# hand of our Savior, Jesus Christ" is a relative clause: the "that" is the
+# object of "gives", and "time" is the subject of it. It is told apart by
+# needing both of the things a relative clause has and a pointer never does --
+# a noun phrase in front of it to modify, and a verb after it left without the
+# object it wants. Both halves are required because either on its own is
+# ordinary: "As the disciples walked away from the Savior that day" has the
+# noun phrase, and "What I experienced that day was a small yet powerful
+# manifestation" has the verb. Over the whole conference cache the pair
+# exempts that one paragraph and nothing else.
+RELATIVE_ANTECEDENT = re.compile(
+    r"\b(?:the|a|an|my|our|your|his|her|their|its)\s+\w+\s+$", re.I)
+RELATIVE_GAP = re.compile(
+    r"^\s+\w+s\s+(?:to|for|us|me|them|him|her|you|the|a|an|in|into|on|with|"
+    r"and|from)\b", re.I)
+
+
+def occasion_named(noun: str) -> str:
+    """The word in either number, for finding it earlier in the paragraph."""
+    noun = noun.lower()
+    if noun.endswith("ies"):
+        noun = noun[:-3] + "y"
+    elif noun.endswith("s"):
+        noun = noun[:-1]
+    if noun.endswith("y"):
+        return rf"\b{noun[:-1]}(?:y|ies)\b"
+    return rf"\b{noun}s?\b"
+
+
+def unnamed_occasion(text: str) -> bool:
+    """Whether a "that day" here points at a day the paragraph never names."""
+    for match in POINTING_BACK.finditer(text):
+        noun = match.group(1) or match.group(2)
+        before, after = text[:match.start()], text[match.end():]
+        if re.search(occasion_named(noun), before, re.I):
+            continue
+        if OCCASION_AHEAD.match(after):
+            continue
+        if RELATIVE_ANTECEDENT.search(before) and RELATIVE_GAP.match(after):
+            continue
+        return True
+    return False
+
+
 def is_quotable_paragraph(text: str) -> bool:
     """Whether a paragraph can stand alone at all.
 
@@ -1886,6 +2003,10 @@ def is_quotable_paragraph(text: str) -> bool:
     # "Tragically, the bullet ..." -- an adverb opener almost always continues
     # a story told in the paragraph before.
     if re.match(r"^[A-Z][a-z]+ly,", text):
+        return False
+    # A demonstrative pointing at an occasion the paragraph never names --
+    # "remember that day in your life". See `unnamed_occasion`.
+    if unnamed_occasion(text):
         return False
     # Storytelling rather than counsel. The verbs are named rather than matched
     # as any past tense, because "-ed" alone throws out the counsel that is
@@ -1941,16 +2062,7 @@ def build_quote_pool(count: int = 1) -> list[dict]:
                 skipped.append(title)
                 continue
 
-            # Take the talk proper, stopping before the endnotes -- those are
-            # bibliography lines, not anything worth quoting.
-            block = re.search(r'<div class="body-block">(.*?)(?:<footer class="notes">|\Z)',
-                              body, re.S)
-            # Cleaned here rather than in the loop below, because a quote's link
-            # is aimed at the paragraph above it and so needs the text of
-            # paragraphs this talk is never quoted from -- see scroll_fragment.
-            paragraphs = [(pid, clean(raw)) for pid, raw in
-                          re.findall(r'<p [^>]*id="(p[_A-Za-z0-9]+)"[^>]*>(.*?)</p>',
-                                     block.group(1) if block else "", re.S)]
+            paragraphs = talk_paragraphs(body)
             session = f"{'April' if month == 4 else 'October'} {year}"
             rank = speaker_rank(role_text)
             candidates = []
