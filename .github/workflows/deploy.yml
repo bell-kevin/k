@@ -51,6 +51,12 @@ jobs:
       - name: Check the reading rules
         run: python tools/test_readings.py
 
+      # The same, for the General Conference card. A paragraph that only makes
+      # sense next to the one above it is the fault this catches -- "remember
+      # that day in your life", with the day back in the paragraph before.
+      - name: Check the quote rules
+        run: python tools/test_quotes.py
+
       # A link has to open the verse where a reader can see it. The study
       # reader draws its toolbar over the top of the page and offsets nothing,
       # so where a link scrolls to is the site's problem to get right. This
