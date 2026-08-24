@@ -484,6 +484,107 @@
       "verdict": "keep",
       "why": "Likewise -- ends in a semicolon and wants nothing from 34:38.",
       "text": "And now, my beloved brethren, I desire that ye should remember these things, and that ye should work out your salvation with fear before God, and that ye should no more deny the coming of Christ;"
+    },
+    {
+      "reference": "Alma 46:14",
+      "path": "bofm/alma/46",
+      "verse": 14,
+      "verdict": "refuse",
+      "ruled": true,
+      "why": "\"For thus were all the true believers ... called\" -- what they were called is \"Christians\", in 46:13. Reported as broken.",
+      "text": "For thus were all the true believers of Christ, who belonged to the church of God, called by those who did not belong to the church."
+    },
+    {
+      "reference": "Helaman 3:28",
+      "path": "bofm/hel/3",
+      "verse": 28,
+      "verdict": "keep",
+      "why": "The other job the same word does: \"thus we see\" is inferential, and the point it draws is the whole of the verse.",
+      "text": "Yea, thus we see that the gate of heaven is open unto all, even to those who will believe on the name of Jesus Christ, who is the Son of God."
+    },
+    {
+      "reference": "1 Nephi 21:7",
+      "path": "bofm/1-ne/21",
+      "verse": 7,
+      "verdict": "keep",
+      "why": "\"Thus saith the Lord\" -- the inversion is idiom, and the words the \"thus\" stands for begin at the colon.",
+      "text": "Thus saith the Lord, the Redeemer of Israel, his Holy One, to him whom man despiseth, to him whom the nations abhorreth, to servant of rulers: Kings shall see and arise, princes also shall worship, because of the Lord that is faithful."
+    },
+    {
+      "reference": "Mosiah 23:15",
+      "path": "bofm/mosiah/23",
+      "verse": 15,
+      "verdict": "keep",
+      "why": "\"Thus did Alma teach his people, that ...\" -- an auxiliary reaching a verb of teaching, filled by its own next clause.",
+      "text": "Thus did Alma teach his people, that every man should love his neighbor as himself, that there should be no contention among them."
+    },
+    {
+      "reference": "Doctrine and Covenants 137:7",
+      "path": "dc-testament/dc/137",
+      "verse": 7,
+      "verdict": "keep",
+      "ruled": true,
+      "why": "\"Thus came the voice of the Lord unto me, saying:\" -- what came is named on the spot and brings the quotation with it. Ruled a verse that stands on its own two feet.",
+      "text": "Thus came the voice of the Lord unto me, saying: All who have died without a knowledge of this gospel, who would have received it if they had been permitted to tarry, shall be heirs of the celestial kingdom of God;"
+    },
+    {
+      "reference": "3 Nephi 7:23",
+      "path": "bofm/3-ne/7",
+      "verse": 23,
+      "verdict": "refuse",
+      "why": "\"Thus passed away the thirty and second year\" -- the bookkeeping shape of the same inversion.",
+      "text": "Thus passed away the thirty and second year also. And Nephi did cry unto the people in the commencement of the thirty and third year; and he did preach unto them repentance and remission of sins."
+    },
+    {
+      "reference": "Isaiah 59:19",
+      "path": "ot/isa/59",
+      "verse": 19,
+      "verdict": "refuse",
+      "why": "\"So shall they fear\" -- \"so\" fronts the same way, and the manner is the recompense of 59:18.",
+      "text": "So shall they fear the name of the Lord from the west, and his glory from the rising of the sun. When the enemy shall come in like a flood, the Spirit of the Lord shall lift up a standard against him."
+    },
+    {
+      "reference": "1 Nephi 17:2",
+      "path": "bofm/1-ne/17",
+      "verse": 2,
+      "verdict": "keep",
+      "why": "\"And so great were the blessings\" -- the degree correlative, answered by its own \"that\" and no verb in the subject's place.",
+      "text": "And so great were the blessings of the Lord upon us, that while we did live upon raw meat in the wilderness, our women did give plenty of suck for their children, and were strong, yea, even like unto the men; and they began to bear their journeyings without murmurings."
+    },
+    {
+      "reference": "2 Thessalonians 1:4",
+      "path": "nt/2-thes/1",
+      "verse": 4,
+      "verdict": "refuse",
+      "why": "\"So that we ourselves glory in you\" -- the tail of the sentence begun in 1:3.",
+      "text": "So that we ourselves glory in you in the churches of God for your patience and faith in all your persecutions and tribulations that ye endure:"
+    },
+    {
+      "reference": "Ether 12:31",
+      "path": "bofm/ether/12",
+      "verse": 31,
+      "verdict": "refuse",
+      "ruled": true,
+      "why": "Re-supplies the manner in a clause restating the same act, so it looks like the rule overreaching. Ruled out anyway.",
+      "text": "For thus didst thou manifest thyself unto thy disciples; for after they had faith, and did speak in thy name, thou didst show thyself unto them in great power."
+    },
+    {
+      "reference": "Mosiah 28:4",
+      "path": "bofm/mosiah/28",
+      "verse": 4,
+      "verdict": "refuse",
+      "ruled": true,
+      "why": "The same shape and no closer call -- the \"for\" clause is a reason for the mercy, not the manner of the working.",
+      "text": "And thus did the Spirit of the Lord work upon them, for they were the very vilest of sinners. And the Lord saw fit in his infinite mercy to spare them; nevertheless they suffered much anguish of soul because of their iniquities, suffering much and fearing that they should be cast off forever."
+    },
+    {
+      "reference": "2 Nephi 8:7",
+      "path": "bofm/2-ne/8",
+      "verse": 7,
+      "verdict": "keep",
+      "ruled": true,
+      "why": "Ruled a verse that stands on its own two feet, and worth pinning because the speaker is never named in it -- the \"me\" and the \"I\" are the Lord, and the verse says so nowhere. It stands because the address is the whole of the reading. A rule that ever extends `unanchored_singular` to the first person would take it.",
+      "text": "Hearken unto me, ye that know righteousness, the people in whose heart I have written my law, fear ye not the reproach of men, neither be ye afraid of their revilings."
     }
   ]
 }

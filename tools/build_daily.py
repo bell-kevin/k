@@ -469,6 +469,10 @@ def reads_as_a_reading(text: str) -> bool:
     # An "it" standing in for a clause the verse never supplies.
     if unfilled_it(opening):
         return False
+    # A "thus" standing in for a manner the verse never describes. Asked of the
+    # whole verse, because the lead-in is where the word itself is.
+    if unfilled_thus(text):
+        return False
     # A "they" the verse only ever has things done to.
     if UNANCHORED_PLURAL.match(opening):
         return False
@@ -492,8 +496,8 @@ def is_quotable_verse(text: str) -> bool:
 VERSE_FLOOR = 3.0
 
 
-# How much of the quotable pool the ordinary days draw on. 1,834 of the book's
-# 6,604 verses clear the floor, and 1,810 are left once the mastery passages
+# How much of the quotable pool the ordinary days draw on. 1,830 of the book's
+# 6,604 verses clear the floor, and 1,806 are left once the mastery passages
 # are taken out of the ordinary pool -- more than four years of reading, and it
 # takes in a lot that merely cleared the bar; keeping the best of it means every
 # day is a verse worth meeting cold, and still turns over enough that a reader
@@ -839,8 +843,15 @@ NARRATIVE_OPENER = re.compile(
 # clause: "And again, that same God has brought our fathers out of the land of
 # Jerusalem" is a whole sentence with a subject. Only the second step is
 # guarded, so a single conjunction still decides these the way it always has.
+#
+# "So" belongs in that list and was missing from it. A verse that opens "So
+# that" is the tail of a sentence begun in the verse before, without exception
+# in anything read here -- "So that ye come behind in no gift", "So that we
+# ourselves glory in you in the churches of God for your patience and faith",
+# "So that the priests could not stand to minister because of the cloud", whose
+# cloud filled the house back in 1 Kings 8:10.
 FRAGMENT_OPENER = re.compile(
-    r"^(?:and|but|now|yea|wherefore|therefore)?[,\s]*"
+    r"^(?:and|but|now|yea|so|wherefore|therefore)?[,\s]*"
     r"(?:(?:also|again|moreover|likewise)\b[,\s]*(?!that\s+(?:same|such|very|"
     r"great)\b))?"
     r"(that|which|whom|whose)\b", re.I)
@@ -972,6 +983,105 @@ def unfilled_it(opening: str) -> bool:
     if not IT_OPENER.match(opening) or QUOTING_IT.match(opening):
         return False
     return not IT_FILLED.search(FIRST_SENTENCE.match(opening).group(0))
+
+
+# The same fault in adverb form, and the only one of these that word order
+# decides.
+#
+# A verse that fronts "thus" is doing one of two opposite jobs with it. It is
+# inferential when it means "and therefore", and then what follows is a
+# conclusion that stands by itself: "And thus mercy can satisfy the demands of
+# justice", "Thus all mankind were lost", "And thus we see that the gate of
+# heaven is open unto all". The reader loses the derivation and keeps the
+# point, and the point is the whole of the verse.
+#
+# It is a manner adverb when it means "in this way", and then it is a pointer
+# with nothing in the verse to point at. Alma 46:14 is the clearest case there
+# is: "For thus were all the true believers of Christ, who belonged to the
+# church of God, called by those who did not belong to the church." What they
+# were called is "Christians", and it is in 46:13. The verse spends itself
+# saying that a people were named something without ever saying what -- and it
+# scored 7.3 doing it, high enough for the tier, because every word it uses is
+# a gospel word. It was reported as broken.
+#
+# English marks which job the word is doing by inverting the subject and the
+# verb. "Thus WERE all the true believers ... called", "Thus PASSED AWAY the
+# thirty and second year", "Thus HATH the Lord dealt with me" -- against "thus
+# WE SEE", "thus MERCY can satisfy", "Thus GOD has provided a means". So the
+# test is for a finite verb standing where the subject belongs, which is also
+# the shape this book keeps its bookkeeping in: "And thus ended the tenth year
+# of the reign of the judges over the people of Nephi."
+#
+# The exception is a speech attribution, where the inversion is idiom and the
+# words the "thus" stands for arrive right after it. Around two in three of the
+# fronted verbs are this, and they are among the best readings there are: "For
+# thus saith the Lord God: They shall write the things which shall be done
+# among them", "Thus did Alma teach his people, that every man should love his
+# neighbor as himself", "For so hath the Lord commanded us, saying, I have set
+# thee to be a light of the Gentiles". Those are filled by their own next
+# clause and want nothing from the verse before.
+#
+# "So" fronts the same way and is refused on the same ground -- "So shall they
+# fear the name of the Lord from the west", "Yea, so have I strived to preach
+# the gospel". Its other uses are untouched, because none of them puts a verb
+# in the subject's place: the degree correlative of "And so great was the faith
+# of Enoch that he led the people of God" is answered by its own "that".
+#
+# Two verses look at first like the rule overreaching, and a reader ruled that
+# it does not. Ether 12:31 -- "For thus didst thou manifest thyself unto thy
+# disciples; for after they had faith, and did speak in thy name, thou didst
+# show thyself unto them in great power" -- points outward and then re-supplies
+# the manner itself, in a clause restating the same act with the same subject,
+# so it could be argued to fill its own "thus". It goes out anyway. Mosiah 28:4
+# is the same shape and no closer call ("And thus did the Spirit of the Lord
+# work upon them, for they were the very vilest of sinners" -- a reason for the
+# mercy, not the manner of the working). Both are refused, and neither is a
+# loss the pool feels.
+#
+# The verse the exemption is for is Doctrine and Covenants 137:7, "Thus came
+# the voice of the Lord unto me, saying: All who have died without a knowledge
+# of this gospel ... shall be heirs of the celestial kingdom of God" -- ruled a
+# reading that stands on its own two feet, and kept by leaving "came" out of
+# `FRONTED_VERB` below.
+THUS_LEAD = re.compile(r"\b(?:thus|so)\b[,;:\s]*$", re.I)
+
+# "Came" is deliberately absent. The few verses that front "thus came" or
+# "thus cometh" -- none of them in the Book of Mormon -- all name the thing
+# that came on the spot, and it brings its own manner with it: "Thus came the
+# voice of the Lord unto me, saying: All who have died without a knowledge of
+# this gospel ... shall be heirs of the celestial kingdom of God", "Thus came
+# John, preaching and baptizing in the river of Jordan". The word would buy
+# nothing and cost those.
+FRONTED_VERB = re.compile(
+    r"^(?:is|was|were|are|art|be|been|hath|has|have|had|shall|shalt|will|"
+    r"wilt|would|should|may|might|must|can|could|do|dost|doth|did|didst|"
+    r"saith|said|say|speak|speaketh|spake|prophesied|commandeth|"
+    r"passed|ended|endeth|commenced|began)\b", re.I)
+
+# Either the verb of saying leads, or an auxiliary reaches one before the
+# clause breaks. The punctuation matters: "Thus did Moses: according to all
+# that the Lord commanded him, so did he" reaches "commanded" only across a
+# colon, and is an account of an obedience rather than a record of the words.
+QUOTING_THUS = re.compile(
+    r"^(?:saith|said|say|speak|speaketh|spake|spoken|prophesied|commandeth)\b"
+    r"|^(?:hath|has|have|had|shall|shalt|will|would|should|do|doth|did|didst)"
+    r"\b[^,;:.]{0,40}?\b(?:say|saith|said|speak|spake|spoken|speaketh|command|"
+    r"commanded|teach|taught|prophesy|prophesied|declare|declared|testify|"
+    r"testified|write|written)\b", re.I)
+
+
+def unfilled_thus(text: str) -> bool:
+    """Whether a fronted "thus" stands for a manner the verse never describes.
+
+    This one is asked of the whole verse rather than of the opening, because
+    the lead-in is where the word itself is: `LEAD_IN` lifts "thus" off with
+    the conjunctions, and whether it was there at all is the question.
+    """
+    lead = LEAD_IN.match(text)
+    if not lead or not THUS_LEAD.search(lead.group(0)):
+        return False
+    rest = text[lead.end():]
+    return bool(FRONTED_VERB.match(rest)) and not QUOTING_THUS.match(rest)
 
 
 # The plural's own version of the same fault. `unanchored_singular` below
