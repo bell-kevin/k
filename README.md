@@ -95,6 +95,22 @@ journeying in the wilderness — or if it is not a whole thought to begin with:
   words are allowed now, guarded, because that second step reaches *that* used
   as a determiner: *And again, that same God has brought our fathers out of the
   land of Jerusalem* is a whole sentence with a subject in it;
+- **a verse ending on an em dash** is the mirror image: the *front* half of a
+  sentence that finishes in the verse after. This book marks a thought carried
+  across a verse boundary that way, and the mark is reliable — of the 150
+  verses that end in one, 122 open the next verse on a conjunction. What the
+  dash leaves behind is a verse that sets something up and never pays it off.
+  *…that I knew not whether they were cleansed from mortality to immortality—*
+  is 3 Nephi 28:36, and 28:37 is where Mormon says he asked the Lord and was
+  told; alone it hands the reader a question whose answer stopped being open a
+  verse later. Mosiah 2:20 is the same fault at its most conspicuous — *if you
+  should render all the thanks and praise which your whole soul has power to
+  possess…* — with the *yet ye would be unprofitable servants* the sentence is
+  built to reach left behind in 2:21. It scored 13.8, higher than anything else
+  the tier held, which is the argument for refusing this at the gate rather
+  than pricing it: the score reads vocabulary, and every gospel word is
+  present. Only the sentence is missing. A bare comma goes with it; a colon or
+  a semicolon does not, for the reason given below;
 - a verse that only introduces the speech in the next one — *Then Job answered
   and said,* — is the label, not the reading;
 - a verse with **a "he" it never answers**. This is the one that decides most
@@ -271,10 +287,11 @@ And against it:
   answers and the reader is left holding.
 - **−0.8 for a verse ending in a colon or a semicolon**, which usually means the
   sentence finishes in the next one. A light touch rather than a refusal,
-  because the King James punctuates whole sentences that way as well.
+  because the King James punctuates whole sentences that way as well — which is
+  exactly what an em dash does not do, and why that one is refused at the gate.
 
-A verse needs 3.0 to be quotable at all. **1,873 of the 6,604 clear that bar**,
-and 1,849 are left once the mastery passages below are taken out of the ordinary
+A verse needs 3.0 to be quotable at all. **1,834 of the 6,604 clear that bar**,
+and 1,810 are left once the mastery passages below are taken out of the ordinary
 pool — more than four years of reading either way, and it takes in a lot that
 merely scraped through, so the ordinary days draw on **the best 500** instead
 (the last build's cutoff was 6.7). Five hundred is chosen deliberately: it is

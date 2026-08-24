@@ -441,6 +441,49 @@
       "ruled": false,
       "why": "'this life is the time' -- a demonstrative used as a determiner.",
       "text": "For behold, this life is the time for men to prepare to meet God; yea, behold the day of this life is the day for men to perform their labors."
+    },
+    {
+      "reference": "3 Nephi 28:36",
+      "path": "bofm/3-ne/28",
+      "verse": 36,
+      "verdict": "refuse",
+      "ruled": true,
+      "why": "Ends on an em dash: Mormon 'knew not whether they were cleansed', and 28:37 is where he says he asked and was told. Reported as broken -- the answer is a verse away, so alone it is old news.",
+      "text": "And now behold, as I spake concerning those whom the Lord hath chosen, yea, even three who were caught up into the heavens, that I knew not whether they were cleansed from mortality to immortality—"
+    },
+    {
+      "reference": "Mosiah 2:20",
+      "path": "bofm/mosiah/2",
+      "verse": 20,
+      "verdict": "refuse",
+      "ruled": true,
+      "why": "The same fault at the top of the tier: the 'yet ye would be unprofitable servants' the sentence is built to reach is in 2:21. Scored 13.8, higher than anything else kept, because the score reads vocabulary and the vocabulary is all here.",
+      "text": "I say unto you, my brethren, that if you should render all the thanks and praise which your whole soul has power to possess, to that God who has created you, and has kept and preserved you, and has caused that ye should rejoice, and has granted that ye should live in peace one with another—"
+    },
+    {
+      "reference": "Alma 13:6",
+      "path": "bofm/alma/13",
+      "verse": 6,
+      "verdict": "refuse",
+      "why": "A trailing em dash with no main clause behind it at all: 'And thus being called ... that they also might enter into his rest—'.",
+      "text": "And thus being called by this holy calling, and ordained unto the high priesthood of the holy order of God, to teach his commandments unto the children of men, that they also might enter into his rest—"
+    },
+    {
+      "reference": "2 Nephi 2:28",
+      "path": "bofm/2-ne/2",
+      "verse": 28,
+      "verdict": "keep",
+      "ruled": true,
+      "why": "The other side of that rule. A semicolon at a verse's end is not an em dash: this is whole counsel, and the King James punctuates finished sentences this way.",
+      "text": "And now, my sons, I would that ye should look to the great Mediator, and hearken unto his great commandments; and be faithful unto his words, and choose eternal life, according to the will of his Holy Spirit;"
+    },
+    {
+      "reference": "Alma 34:37",
+      "path": "bofm/alma/34",
+      "verse": 37,
+      "verdict": "keep",
+      "why": "Likewise -- ends in a semicolon and wants nothing from 34:38.",
+      "text": "And now, my beloved brethren, I desire that ye should remember these things, and that ye should work out your salvation with fear before God, and that ye should no more deny the coming of Christ;"
     }
   ]
 }
