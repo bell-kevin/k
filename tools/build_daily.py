@@ -430,6 +430,32 @@ def reads_as_a_reading(text: str) -> bool:
     # The back half of a sentence that started in the verse before.
     if FRAGMENT_OPENER.match(text):
         return False
+    # And the mirror image: the front half of a sentence that finishes in the
+    # verse after. This book marks a thought carried across a verse boundary
+    # with a trailing em dash, and the mark is reliable -- of the 150 verses
+    # that end in one, 122 open the next verse on a conjunction.
+    #
+    # What the dash leaves behind is a verse that sets something up and never
+    # pays it off. 3 Nephi 28:36 is Mormon saying he "knew not whether they
+    # were cleansed from mortality to immortality"; 28:37 is where he says he
+    # asked the Lord and was told. Alone, the verse is a question with its
+    # answer held back, and the reader is given the half that stopped being
+    # true a verse later.
+    #
+    # Mosiah 2:20 is the same fault at its most conspicuous, and shows why the
+    # score cannot catch it: "if you should render all the thanks and praise
+    # which your whole soul has power to possess ... " -- and the "yet ye
+    # would be unprofitable servants" the whole sentence is built to arrive at
+    # is in 2:21. It scored 13.8, the highest of anything in the tier, because
+    # the score reads vocabulary and every gospel word is present. Only the
+    # sentence is missing. So this is a question of shape, and belongs here
+    # with the other things a verse is refused for outright.
+    #
+    # A bare comma is the same fault said more quietly, and goes with it. The
+    # colon and semicolon do not: the King James punctuates whole sentences
+    # that way, which is why `verse_score` only ever charged them a little.
+    if text.rstrip().endswith(("—", ",")):
+        return False
     # "Who shall ascend into the hill of the Lord?" is a reading; "Who is he
     # that hideth counsel without knowledge" is a relative clause carrying on.
     if re.match(r"^who\b", text, re.I) and "?" not in text:
@@ -466,8 +492,8 @@ def is_quotable_verse(text: str) -> bool:
 VERSE_FLOOR = 3.0
 
 
-# How much of the quotable pool the ordinary days draw on. 1,873 of the book's
-# 6,604 verses clear the floor, and 1,849 are left once the mastery passages
+# How much of the quotable pool the ordinary days draw on. 1,834 of the book's
+# 6,604 verses clear the floor, and 1,810 are left once the mastery passages
 # are taken out of the ordinary pool -- more than four years of reading, and it
 # takes in a lot that merely cleared the bar; keeping the best of it means every
 # day is a verse worth meeting cold, and still turns over enough that a reader
