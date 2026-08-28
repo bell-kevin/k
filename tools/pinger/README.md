@@ -59,9 +59,18 @@ uses one request a day against a 100,000/day allowance.
 ```sh
 cd tools/pinger
 npx wrangler login
-npx wrangler secret put GITHUB_TOKEN   # paste the token from step 1
 npx wrangler deploy
+npx wrangler secret put GITHUB_TOKEN   # paste the token from step 1
 ```
+
+Deploy before setting the secret. `secret put` against a worker that does not
+exist yet works, but it stops to ask whether to create one, and answering that
+question is the only hard part of this. Deploying first means there is already
+a worker to put the secret on. The worker picks the secret up as soon as it is
+set; it does not need deploying again.
+
+The first `deploy` on a new account asks you to pick a `workers.dev`
+subdomain. Any name; it becomes part of the URL you test with below.
 
 ### 3. Confirm it works
 
