@@ -1,0 +1,23 @@
+name = "verse-render-pinger"
+main = "worker.js"
+compatibility_date = "2026-05-01"
+
+# After both of the workflow's own attempts, not between them -- this is the
+# one that runs when GitHub has already had two chances and taken neither.
+# 16:25 UTC is 10:25 MDT and 09:25 MST, so it is the same Denver day the page
+# is built for in either half of the year. A minute nobody else picks, for the
+# same reason the workflow's second cron is at :40.
+[triggers]
+crons = ["25 16 * * *"]
+
+[vars]
+SITE_URL = "https://bell-kevin.github.io/verse/"
+REPO = "bell-kevin/verse"
+# The workflow's filename works as its id and survives a rename of the
+# workflow's name: field, which the numeric id does not read as.
+WORKFLOW = "deploy.yml"
+BRANCH = "main"
+# Must match tools/build_daily.py --timezone. Change both together.
+TIMEZONE = "America/Denver"
+
+# GITHUB_TOKEN is a secret, not a var. See README.md.
