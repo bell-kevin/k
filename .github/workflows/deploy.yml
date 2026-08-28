@@ -8,6 +8,20 @@ on:
     # America/Denver, the timezone the page is built for; change both together.
     # This job re-renders from the prebuilt calendar and fetches nothing.
     - cron: "10 8 * * *"
+    # The same render again, six and a half hours later. GitHub runs a
+    # schedule when it has capacity and is free to drop one outright: the
+    # 08:10 above fired eleven hours late on 2026-08-27 and not at all on
+    # 2026-08-28, and each time the no-JS page sat on the previous day until
+    # someone noticed. A reader with JavaScript never sees it -- assets/app.js
+    # re-renders from the calendar when data-built-for is not their today --
+    # so the readers this site exists for are the only ones it fails. A second
+    # attempt at an unrelated hour and minute is not a fix for that, but it is
+    # a cheap one: --render-only writes the same bytes for the same day, and
+    # the commit step below exits on "Nothing changed", so the run costs half
+    # a minute and changes nothing when the first one worked. 14:40 UTC is
+    # still the same Denver day in either half of the year -- 08:40 MDT,
+    # 07:40 MST.
+    - cron: "40 14 * * *"
     # Twice a week, refetch to extend the calendar and pick up new content.
     # General Conference is held on a weekend and its talks are posted over the
     # following days, so checking Mondays and Thursdays picks up a new
