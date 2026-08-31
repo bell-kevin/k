@@ -1,12 +1,14 @@
 // A trigger for the deploy workflow that does not live on GitHub.
 //
-// The workflow already asks GitHub to render the page twice a day. GitHub
-// runs a scheduled workflow when it has capacity and is free to skip one
-// outright, and on 2026-08-27 and 2026-08-28 it did: eleven hours late, then
-// not at all. Readers with JavaScript never saw it, because assets/app.js
-// re-renders from the calendar whenever data-built-for disagrees with their
-// own today. The readers this site is for -- no app, no account, no
-// JavaScript -- were served the previous day both times.
+// The workflow already asks GitHub to render the page three times a day.
+// GitHub runs a scheduled workflow when it has capacity and is free to skip
+// one outright, and on 2026-08-27, 2026-08-28 and 2026-08-31 it did: eleven
+// hours late, then not at all, then not at all again -- the last of those
+// taking every scheduled run of the day with it. Readers with JavaScript
+// never saw any of it, because assets/app.js re-renders from the calendar
+// whenever data-built-for disagrees with their own today. The readers this
+// site is for -- no app, no account, no JavaScript -- were served the
+// previous day all three times.
 //
 // This runs on Cloudflare's scheduler instead, and it dispatches the same
 // workflow. That covers a dropped or delayed schedule, which is the whole of

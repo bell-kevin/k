@@ -22,6 +22,17 @@ on:
     # still the same Denver day in either half of the year -- 08:40 MDT,
     # 07:40 MST.
     - cron: "40 14 * * *"
+    # And once more in the afternoon. Two attempts is thin cover when GitHub
+    # is running both of them hours late rather than dropping just one: to the
+    # end of August the 08:10 landed anywhere between 13:46 and 20:10, and on
+    # 2026-08-31 it, the 14:40 and the Monday refetch were all skipped
+    # outright, leaving Sunday's readings up until a dispatch was sent by
+    # hand. A render is only safe between 07:00 UTC and midnight UTC -- before
+    # 07:00 it is still the previous day in Denver in the winter half of the
+    # year -- and three attempts spread over that window sit about six and a
+    # half hours apart, so a morning GitHub swallows whole still rolls the
+    # page over well before the evening. 20:35 UTC is 14:35 MDT, 13:35 MST.
+    - cron: "35 20 * * *"
     # Twice a week, refetch to extend the calendar and pick up new content.
     # General Conference is held on a weekend and its talks are posted over the
     # following days, so checking Mondays and Thursdays picks up a new
