@@ -4,16 +4,18 @@ A trigger for the deploy workflow that does not depend on GitHub's scheduler.
 
 ## Why this exists
 
-`.github/workflows/deploy.yml` asks GitHub to re-render the page twice a day.
-GitHub runs a scheduled workflow when it has capacity and is free to skip one
-outright. On 2026-08-27 the 08:10 UTC schedule fired eleven hours late; on
-2026-08-28 it did not fire at all.
+`.github/workflows/deploy.yml` asks GitHub to re-render the page three times a
+day. GitHub runs a scheduled workflow when it has capacity and is free to skip
+one outright. On 2026-08-27 the 08:10 UTC schedule fired eleven hours late; on
+2026-08-28 it did not fire at all; on 2026-08-31 nothing scheduled ran at all
+— both renders and the Monday refetch — and the page served Sunday's
+readings until a dispatch was sent by hand. Three mornings in five.
 
-Nobody with JavaScript noticed either time. `assets/app.js` reads
+Nobody with JavaScript noticed any of it. `assets/app.js` reads
 `data-built-for` off `<body>`, compares it to the reader's own today, and
 re-renders from `data/daily.json` when they disagree — and the calendar runs
-to 2028. The readers this site is built for got the previous day, twice, and
-the only reason it was caught is that someone looked.
+to 2028. The readers this site is built for got the previous day all three
+times, and the only reason it was caught is that someone looked.
 
 ## What it does and does not cover
 
@@ -98,16 +100,23 @@ dispatch. Put it back afterwards.
 
 ## Timing
 
-Three attempts, all landing on the same Denver day the page is built for:
+Four attempts, all landing on the same Denver day the page is built for:
 
 | When (UTC) | Denver (MDT / MST) | Who asks    |
 | ---------- | ------------------ | ----------- |
 | 08:10      | 02:10 / 01:10      | GitHub cron |
 | 14:40      | 08:40 / 07:40      | GitHub cron |
 | 16:25      | 10:25 / 09:25      | this worker |
+| 20:35      | 14:35 / 13:35      | GitHub cron |
 
-The worker runs last, on purpose: it is the one that goes when GitHub has
-already had two chances and taken neither.
+The worker goes third, on purpose: it is the one that asks once GitHub has had
+two chances and taken neither, and it asks hours before GitHub's own third
+attempt would.
+
+That third GitHub attempt sits behind the worker for the morning the worker is
+the thing that is broken. An expired token answers `401` and dispatches
+nothing, and it does that quietly — so the last word of the day belongs to a
+scheduler that needs no credential anyone has to remember to renew.
 
 `TIMEZONE` in `wrangler.toml` must match `--timezone` in
 `tools/build_daily.py` (`America/Denver`). If they drift apart, the worker

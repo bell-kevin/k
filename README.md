@@ -813,11 +813,17 @@ stay put, the date shown next to them is the date they belong to, and a short
 notice says which day the page is showing — so the page never claims a reading
 is today's when it isn't.
 
-Two scheduled runs of `.github/workflows/deploy.yml` keep it current:
+Scheduled runs of `.github/workflows/deploy.yml` keep it current:
 
-- **daily**, at 08:10 UTC — the small hours in `America/Denver`, the timezone
-  the page is built for. This re-renders the page for the new day from the
-  calendar already in the repository, and fetches nothing.
+- **daily**, at 08:10, 14:40 and 20:35 UTC — the first is the small hours in
+  `America/Denver`, the timezone the page is built for, and the other two are
+  the morning and the afternoon of that same Denver day. Each re-renders the
+  page for the new day from the calendar already in the repository, and fetches
+  nothing. Three attempts rather than one because GitHub runs a scheduled
+  workflow when it has capacity and is free to drop one outright, which it has
+  done: a render that already happened writes the same bytes and commits
+  nothing, so the later attempts cost half a minute each and matter only on the
+  mornings GitHub skips.
 - **Mondays and Thursdays**, at 09:00 UTC — a full refetch, to extend the
   calendar and pick up a newly published conference or manual.
 
@@ -827,7 +833,9 @@ published to Pages.
 
 Because the daily job is what moves a no-JavaScript page on to the next day, the
 site depends on it running. The calendar is built two years ahead, so a missed
-run costs you the right day, never the whole site.
+run costs you the right day, never the whole site. `tools/pinger/` is an
+optional fourth attempt that runs on somebody else's scheduler: it reads the
+page as served, and asks GitHub for a render only when the day on it is stale.
 
 ## Running it yourself
 
