@@ -56,6 +56,8 @@ should not have to sign in to get it either.
 | `tools/test_links.py` | Checks that a link opens its verse where a reader can see it. |
 | `tools/test_calendar.py` | Checks the arithmetic around those rules: week titles, the day index, citations. |
 | `tools/template.html` | The page itself, with placeholders where the day's readings go. |
+| `tools/favicon.svg` | The favicon's artwork. The ICO in `assets/` is rendered from it; the SVG itself is not served. |
+| `tools/pinger/` | An optional off-GitHub trigger for the daily render. Has its own README. |
 | `tools/og-card.html` | The link-preview card. `assets/og.png` is a 1200×630 screenshot of it. |
 | `data/daily.json` | The prebuilt calendar — two years of daily picks, about 1 MB. |
 | `data/months/` | The same calendar, one file per month, so the script can fetch a tenth of it. |
