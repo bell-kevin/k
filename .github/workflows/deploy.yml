@@ -100,10 +100,32 @@ jobs:
       - name: Check the calendar arithmetic
         run: python tools/test_calendar.py
 
-      # A full refetch is ~1,100 requests -- the runner starts with no response
-      # cache, so every one of them goes out -- and it runs only on the
-      # twice-weekly cron or when asked for. Every other run just re-renders
-      # today's page from the calendar already in the repository.
+      # A full refetch is ~1,100 requests, and about 930 of them are chapters
+      # of scripture, which do not change. So the response cache is carried
+      # over from the last refetch rather than started cold, and only the
+      # answers that can go stale are thrown away before the build: the
+      # conference and manual pages, which are how a new conference or a new
+      # year's manual is noticed at all. Bump the key if a chapter ever does
+      # need refetching. The key never matches exactly, on purpose: that is
+      # what makes the action save a fresh copy at the end of every run.
+      - name: Restore the scripture cache
+        if: github.event.schedule == '0 9 * * 1,4' || inputs.refetch
+        uses: actions/cache@v6
+        with:
+          path: .cache
+          key: study-api-v1-${{ github.run_id }}
+          restore-keys: study-api-v1-
+
+      - name: Forget the responses that can go stale
+        if: github.event.schedule == '0 9 * * 1,4' || inputs.refetch
+        run: |
+          mkdir -p .cache
+          find .cache -name '*.json.gz' ! -name 'scriptures_*' -delete
+          echo "$(find .cache -name '*.json.gz' | wc -l) chapters kept"
+
+      # The refetch runs only on the twice-weekly cron or when asked for.
+      # Every other run just re-renders today's page from the calendar already
+      # in the repository.
       - name: Refetch readings calendar
         if: github.event.schedule == '0 9 * * 1,4' || inputs.refetch
         run: python tools/build_daily.py --days 730

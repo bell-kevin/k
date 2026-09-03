@@ -836,6 +836,11 @@ Anything either run changes — the calendar under `data/`, `index.html`, and th
 speaker photos — is committed back to the repository, and then only the served
 files are published to Pages.
 
+The refetch also carries its response cache over from the last one: scripture
+does not change, and the chapters are about 930 of the run's 1,100 requests.
+The conference and manual pages are thrown away before each build, since those
+are how a new conference or a new year's manual gets noticed at all.
+
 Because the daily job is what moves a no-JavaScript page on to the next day, the
 site depends on it running. The calendar is built two years ahead, so a missed
 run costs you the right day, never the whole site. `tools/pinger/` is an
@@ -880,6 +885,9 @@ change them together.
 
 A full build makes about 1,100 requests and takes a few minutes on a cold
 cache. Responses are memoised under `.cache/`; delete it to force a clean fetch.
+Nothing in there expires on its own, so a local build that should notice a new
+conference or manual needs the `general_conference_*` and `manual_*` entries
+deleted first, which is what CI does before every refetch.
 Speaker photos are kept in `assets/speakers/` and are part of the site rather
 than the cache — delete one and the next full build downloads it again.
 
