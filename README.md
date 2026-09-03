@@ -55,6 +55,7 @@ should not have to sign in to get it either.
 | `tools/quote_cases.json` | Those paragraphs, as published. **Generated** — see `--refresh`. |
 | `tools/test_links.py` | Checks that a link opens its verse where a reader can see it. |
 | `tools/template.html` | The page itself, with placeholders where the day's readings go. |
+| `tools/og-card.html` | The link-preview card. `assets/og.png` is a 1200×630 screenshot of it. |
 | `data/daily.json` | The prebuilt calendar — two years of daily picks, about 1 MB. |
 | `data/months/` | The same calendar, one file per month, so the script can fetch a tenth of it. |
 | `assets/app.js` | The enhancement script: theme, share, and correcting the day. |
