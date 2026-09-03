@@ -599,7 +599,13 @@ def bom_for(index: int, tier: list[dict], mastery: list[dict]) -> dict:
     than from a running count, so a given date resolves to the same reading no
     matter what span a build happens to cover.
     """
-    if mastery and index % MASTERY_EVERY == MASTERY_EVERY // 2:
+    # No passages at all -- a build whose every mastery fetch failed -- and
+    # every day is ordinary, with no slot to take out of the numbering below.
+    # Without this the tier still skipped one, and two days running showed
+    # the same verse, which is what tools/test_calendar.py caught.
+    if not mastery:
+        return tier[index % len(tier)]
+    if index % MASTERY_EVERY == MASTERY_EVERY // 2:
         return mastery[(index // MASTERY_EVERY) % len(mastery)]
     # The day's position with the mastery days taken out, so the tier is walked
     # straight through rather than skipping an entry on every mastery day.

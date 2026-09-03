@@ -94,6 +94,12 @@ jobs:
       - name: Check where the links land
         run: python tools/test_links.py
 
+      # The arithmetic that turns a date into a day's readings -- which week a
+      # title names, which chapters it assigns, which verse the index lands on.
+      # Pure functions with no verses to commit, so these are cases in code.
+      - name: Check the calendar arithmetic
+        run: python tools/test_calendar.py
+
       # A full refetch is ~1,100 requests -- the runner starts with no response
       # cache, so every one of them goes out -- and it runs only on the
       # twice-weekly cron or when asked for. Every other run just re-renders

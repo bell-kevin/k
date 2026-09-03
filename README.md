@@ -54,6 +54,7 @@ should not have to sign in to get it either.
 | `tools/test_quotes.py` | Checks the rules that decide a quote against paragraphs ruled on by hand. |
 | `tools/quote_cases.json` | Those paragraphs, as published. **Generated** — see `--refresh`. |
 | `tools/test_links.py` | Checks that a link opens its verse where a reader can see it. |
+| `tools/test_calendar.py` | Checks the arithmetic around those rules: week titles, the day index, citations. |
 | `tools/template.html` | The page itself, with placeholders where the day's readings go. |
 | `tools/og-card.html` | The link-preview card. `assets/og.png` is a 1200×630 screenshot of it. |
 | `data/daily.json` | The prebuilt calendar — two years of daily picks, about 1 MB. |
@@ -979,6 +980,20 @@ It runs in CI beside the reading rules, and again after a refetch, since the
 refetch is the only step that writes links — running it only beforehand audits
 the calendar of the run before, which is how the fortnight of clipped links
 went out green.
+
+### Checking the calendar arithmetic
+
+```sh
+python tools/test_calendar.py            # no network, no cache needed
+```
+
+The plumbing around the rules above, held to cases in code rather than to
+verses: what a week's title says about its dates and its chapters, which day of
+the Book of Mormon calendar lands on which verse, which manual and which
+conference a date reaches for, how a passage is cited and linked. None of it is
+hard, and all of it is the kind of thing that is right until somebody touches
+it — the ordinary-day index in `bom_for` is one subtraction away from skipping a
+verse every fortnight, and nothing else would notice for a year.
 
 ## Licensing, and what the licence does not cover
 
