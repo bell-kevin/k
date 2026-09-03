@@ -54,12 +54,18 @@ should not have to sign in to get it either.
 | `tools/test_quotes.py` | Checks the rules that decide a quote against paragraphs ruled on by hand. |
 | `tools/quote_cases.json` | Those paragraphs, as published. **Generated** — see `--refresh`. |
 | `tools/test_links.py` | Checks that a link opens its verse where a reader can see it. |
+| `tools/test_calendar.py` | Checks the arithmetic around those rules: week titles, the day index, citations. |
 | `tools/template.html` | The page itself, with placeholders where the day's readings go. |
+| `tools/favicon.svg` | The favicon's artwork. The ICO in `assets/` is rendered from it; the SVG itself is not served. |
+| `tools/pinger/` | An optional off-GitHub trigger for the daily render. Has its own README. |
+| `tools/og-card.html` | The link-preview card. `assets/og.png` is a 1200×630 screenshot of it. |
 | `data/daily.json` | The prebuilt calendar — two years of daily picks, about 1 MB. |
+| `data/months/` | The same calendar, one file per month, so the script can fetch a tenth of it. |
 | `assets/app.js` | The enhancement script: theme, share, and correcting the day. |
 | `assets/style.css` | The styling. |
 | `assets/speakers/` | Speaker photos, downloaded at build time and committed. |
 | `.github/workflows/deploy.yml` | The scheduled builds and the Pages deployment. |
+| `.github/dependabot.yml` | Opens a pull request when one of the workflow's actions has a new major. |
 | `.cache/` | Memoised API responses. Not served, not committed; safe to delete. |
 
 The whole builder is one standard-library Python file, so CI installs nothing.
@@ -808,7 +814,9 @@ The script is enhancement only. Apart from the theme button and swapping the
 share block for a share sheet, it does nothing at all unless the reader's own
 date has moved past the date the page was built for — someone ahead of the build
 timezone, or looking at a copy served from cache. In that one case it swaps in
-the right day from `data/daily.json`. If that fetch fails, the baked-in readings
+the right day from the calendar: the month's slice of it under `data/months/`,
+about 40 KB, or the whole of `data/daily.json` only when the month cannot
+answer — a day past the end of what was built. If that fetch fails, the baked-in readings
 stay put, the date shown next to them is the date they belong to, and a short
 notice says which day the page is showing — so the page never claims a reading
 is today's when it isn't.
@@ -827,9 +835,14 @@ Scheduled runs of `.github/workflows/deploy.yml` keep it current:
 - **Mondays and Thursdays**, at 09:00 UTC — a full refetch, to extend the
   calendar and pick up a newly published conference or manual.
 
-Anything either run changes — `data/daily.json`, `index.html`, and the speaker
-photos — is committed back to the repository, and then only the served files are
-published to Pages.
+Anything either run changes — the calendar under `data/`, `index.html`, and the
+speaker photos — is committed back to the repository, and then only the served
+files are published to Pages.
+
+The refetch also carries its response cache over from the last one: scripture
+does not change, and the chapters are about 930 of the run's 1,100 requests.
+The conference and manual pages are thrown away before each build, since those
+are how a new conference or a new year's manual gets noticed at all.
 
 Because the daily job is what moves a no-JavaScript page on to the next day, the
 site depends on it running. The calendar is built two years ahead, so a missed
@@ -875,6 +888,9 @@ change them together.
 
 A full build makes about 1,100 requests and takes a few minutes on a cold
 cache. Responses are memoised under `.cache/`; delete it to force a clean fetch.
+Nothing in there expires on its own, so a local build that should notice a new
+conference or manual needs the `general_conference_*` and `manual_*` entries
+deleted first, which is what CI does before every refetch.
 Speaker photos are kept in `assets/speakers/` and are part of the site rather
 than the cache — delete one and the next full build downloads it again.
 
@@ -975,6 +991,20 @@ It runs in CI beside the reading rules, and again after a refetch, since the
 refetch is the only step that writes links — running it only beforehand audits
 the calendar of the run before, which is how the fortnight of clipped links
 went out green.
+
+### Checking the calendar arithmetic
+
+```sh
+python tools/test_calendar.py            # no network, no cache needed
+```
+
+The plumbing around the rules above, held to cases in code rather than to
+verses: what a week's title says about its dates and its chapters, which day of
+the Book of Mormon calendar lands on which verse, which manual and which
+conference a date reaches for, how a passage is cited and linked. None of it is
+hard, and all of it is the kind of thing that is right until somebody touches
+it — the ordinary-day index in `bom_for` is one subtraction away from skipping a
+verse every fortnight, and nothing else would notice for a year.
 
 ## Licensing, and what the licence does not cover
 

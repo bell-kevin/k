@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<!--
+  The link-preview card: what a pasted link to the site unfurls as, named by
+  the og:image meta in tools/template.html. assets/og.png is a 1200x630
+  screenshot of this page, so this file is the source and that one is the
+  build. To render it again after a change, from the repository root:
+
+    "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" ^
+      --headless=new --disable-gpu --hide-scrollbars --window-size=1200,630 ^
+      --screenshot=assets\og.png "file:///%CD%/tools/og-card.html"
+
+  Any Chromium will do the same with the same flags. The mark is the favicon's
+  artwork, tools/favicon.svg, pasted in; the colours and faces are the site's
+  own, from assets/style.css.
+-->
+<html lang="en"><head><meta charset="utf-8">
+<title>Verse &amp; Quote of the Day</title>
+<style>
+  html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; }
+  body {
+    background: #faf7f2; color: #1e1b16;
+    font: 400 16px/1.5 "Segoe UI", -apple-system, Roboto, Arial, sans-serif;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .card {
+    width: 1040px; height: 470px; box-sizing: border-box;
+    background: #fff; border: 2px solid #e6dfd3; border-radius: 28px;
+    box-shadow: 0 2px 4px rgba(40,30,15,.05), 0 12px 40px rgba(40,30,15,.06);
+    display: flex; align-items: center; gap: 64px; padding: 0 84px;
+  }
+  .mark { flex: none; filter: drop-shadow(0 8px 18px rgba(40,30,15,.18)); }
+  .eyebrow {
+    margin: 0 0 22px; font-size: 22px; font-weight: 600; letter-spacing: .18em;
+    text-transform: uppercase; color: #6b4f26;
+  }
+  h1 {
+    margin: 0; font-family: Georgia, "Times New Roman", serif; font-weight: 600;
+    font-size: 78px; line-height: 1.08; letter-spacing: -.01em;
+  }
+  p.sub { margin: 26px 0 0; font-size: 28px; line-height: 1.4; color: #5c5347; }
+</style></head>
+<body>
+  <div class="card">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="300" height="300" class="mark">
+      <defs>
+        <linearGradient id="tile" x1="8" y1="5" x2="56" y2="59" gradientUnits="userSpaceOnUse">
+          <stop stop-color="#806036"/>
+          <stop offset="1" stop-color="#3f2d1b"/>
+        </linearGradient>
+        <linearGradient id="sun" x1="32" y1="12" x2="32" y2="35" gradientUnits="userSpaceOnUse">
+          <stop stop-color="#f8dc91"/>
+          <stop offset="1" stop-color="#e3aa48"/>
+        </linearGradient>
+      </defs>
+
+      <!-- A sunrise over an open book: one small mark for "daily reading." -->
+      <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#tile)"/>
+      <rect x="3" y="3" width="58" height="58" rx="13" fill="none" stroke="#d8b878" stroke-opacity=".45" stroke-width="2"/>
+
+      <g fill="none" stroke="#f1c86e" stroke-linecap="round" stroke-width="3">
+        <path d="M32 8v5"/>
+        <path d="m20.5 12.5 3.4 3.8"/>
+        <path d="m43.5 12.5-3.4 3.8"/>
+      </g>
+      <circle cx="32" cy="26" r="11" fill="url(#sun)"/>
+
+      <!-- The gold edge is the book's cover; the cream shapes are its pages. -->
+      <path fill="#c7984d" d="M6.5 31.5c9.6-3.1 18-1.6 25.5 4.7 7.5-6.3 15.9-7.8 25.5-4.7v20c-9.1-1.3-17.1.5-25.5 6-8.4-5.5-16.4-7.3-25.5-6z"/>
+      <path fill="#fff8ea" d="M9.5 28.8c8.5-1.8 16.1.1 22.5 6.4v18.7c-6.8-4.7-14.3-6.4-22.5-5.1z"/>
+      <path fill="#f2e4c9" d="M54.5 28.8c-8.5-1.8-16.1.1-22.5 6.4v18.7c6.8-4.7 14.3-6.4 22.5-5.1z"/>
+
+      <!-- The sunbeam becomes the book's center fold. -->
+      <path d="M32 35.2v18.7" fill="none" stroke="#b98035" stroke-linecap="round" stroke-width="2"/>
+      <g fill="none" stroke="#b79c71" stroke-linecap="round" stroke-width="1.6" opacity=".72">
+        <path d="M15 36.5c4.5.1 8.3 1.3 11.7 3.6"/>
+        <path d="M15 41.8c4.5.1 8.3 1.3 11.7 3.6"/>
+        <path d="M49 36.5c-4.5.1-8.3 1.3-11.7 3.6"/>
+        <path d="M49 41.8c-4.5.1-8.3 1.3-11.7 3.6"/>
+      </g>
+    </svg>
+    <div>
+      <p class="eyebrow">No app. No account. No sign-in.</p>
+      <h1>Verse &amp; Quote<br>of the Day</h1>
+      <p class="sub">A Book of Mormon verse, a Come,&nbsp;Follow&nbsp;Me verse, and a General&nbsp;Conference quote. Every&nbsp;day.</p>
+    </div>
+  </div>
+</body></html>

@@ -20,6 +20,7 @@ import argparse
 import datetime as dt
 import gzip
 import html
+import http.client
 import json
 import os
 import random
@@ -35,6 +36,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 CACHE = ROOT / ".cache"
 OUT = ROOT / "data" / "daily.json"
+# The same calendar again, one file per month, for the script to fetch a
+# tenth of it instead of the whole two years -- see `write_months`.
+MONTH_DIR = ROOT / "data" / "months"
 SPEAKERS = ROOT / "assets" / "speakers"
 
 API = "https://www.churchofjesuschrist.org/study/api/v3/language-pages/type/content"
@@ -361,8 +365,14 @@ def fetch(uri: str, retries: int = 3) -> dict | None:
                 json.dump(data, fh)
             time.sleep(0.25)  # be a polite client
             return data
-        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError,
-                ValueError) as err:
+        except (OSError, http.client.HTTPException, ValueError) as err:
+            # OSError is the whole family: URLError and TimeoutError are both
+            # subclasses, and so are the ConnectionResetError and friends that
+            # the *read* half of a request raises rather than the open. Those,
+            # and http.client's IncompleteRead, are what an earlier, narrower
+            # clause let through -- and with the pool below, one of them took
+            # down a 1,100-request build rather than costing one retry.
+            #
             # 404 means no such page. 401/403 means the page exists but is not
             # public yet -- a manual is staged behind auth for months before it
             # is published. Neither answer improves on a retry.
@@ -589,7 +599,13 @@ def bom_for(index: int, tier: list[dict], mastery: list[dict]) -> dict:
     than from a running count, so a given date resolves to the same reading no
     matter what span a build happens to cover.
     """
-    if mastery and index % MASTERY_EVERY == MASTERY_EVERY // 2:
+    # No passages at all -- a build whose every mastery fetch failed -- and
+    # every day is ordinary, with no slot to take out of the numbering below.
+    # Without this the tier still skipped one, and two days running showed
+    # the same verse, which is what tools/test_calendar.py caught.
+    if not mastery:
+        return tier[index % len(tier)]
+    if index % MASTERY_EVERY == MASTERY_EVERY // 2:
         return mastery[(index // MASTERY_EVERY) % len(mastery)]
     # The day's position with the mastery days taken out, so the tier is walked
     # straight through rather than skipping an entry on every mastery day.
@@ -1651,7 +1667,7 @@ def fetch_portrait(item: tuple[str, dict | None]) -> tuple[str, str]:
             if not resp.headers.get_content_type().startswith("image/"):
                 return uri, ""
             data = resp.read()
-    except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as err:
+    except (OSError, http.client.HTTPException) as err:
         print(f"  ! no photo for {uri}: {err}", file=sys.stderr)
         return uri, ""
 
@@ -2261,7 +2277,7 @@ def render_cards(entry: dict) -> str:
     <h2 class="card__label">General Conference <span>Quote of the Day</span></h2>
     <blockquote class="quote" id="quote-text">{esc(quote.get('text', ''))}</blockquote>
     <figure class="portrait" id="quote-portrait"{'' if photo else ' hidden'}>
-      <img id="quote-photo"{photo_src} alt="{photo_alt}" width="{PORTRAIT_WIDTH}" height="{PORTRAIT_WIDTH * 9 // 16}" decoding="async">
+      <img id="quote-photo"{photo_src} alt="{photo_alt}" width="{PORTRAIT_WIDTH}" height="{PORTRAIT_WIDTH * 9 // 16}" loading="lazy" decoding="async">
     </figure>
     <p class="ref">
       <span id="quote-speaker" class="speaker">{esc(quote.get('speaker', ''))}</span><a id="quote-link" href="{esc(quote.get('url', '#'))}" target="_blank" rel="noopener noreferrer"><cite id="quote-talk">{esc(quote.get('talk', ''))}</cite></a><span id="quote-session" class="session">{esc(quote.get('session', ''))}</span>
@@ -2292,6 +2308,38 @@ def render_site(payload: dict, timezone: str, date: dt.date | None = None) -> dt
         page = page.replace(token, value)
     INDEX.write_text(page, encoding="utf-8", newline="\n")
     return date
+
+
+def write_months(days: dict[str, dict]) -> tuple[int, int]:
+    """The calendar again, sliced by month, beside the whole of it.
+
+    The script only ever needs one day -- the reader's today, when the page
+    was built for a different one -- and the whole calendar is two years and
+    the better part of a megabyte. That was every reader east of Denver in the
+    morning, and everyone at all on a morning GitHub rendered late, fetching
+    730 days to show one. A month is a tenth of that, and it is what the
+    script asks for first; the whole calendar is the fallback, for a day past
+    the end of what was built. See assets/app.js.
+
+    A month carries no timestamp, so its bytes change only when a pick in it
+    does -- a new conference, a new manual -- and a routine refetch commits
+    nothing here. Months the calendar has moved past are removed. A render-only
+    run writes them too, from the calendar it already has.
+    """
+    by_month: dict[str, dict[str, dict]] = {}
+    for iso, entry in days.items():
+        by_month.setdefault(iso[:7], {})[iso] = entry
+    MONTH_DIR.mkdir(parents=True, exist_ok=True)
+    for month, month_days in by_month.items():
+        with open(MONTH_DIR / f"{month}.json", "w", encoding="utf-8") as fh:
+            json.dump({"days": month_days}, fh, ensure_ascii=False,
+                      separators=(",", ":"))
+    removed = 0
+    for path in MONTH_DIR.glob("*.json"):
+        if path.stem not in by_month:
+            path.unlink()
+            removed += 1
+    return len(by_month), removed
 
 
 def spread(pool: list[dict], seed: int, key) -> list[dict]:
@@ -2346,6 +2394,12 @@ def main() -> int:
             return 1
         with open(OUT, encoding="utf-8") as fh:
             payload = json.load(fh)
+        # The month slices are derived from the calendar, so they are written
+        # here as well as by a full build: the same bytes for the same
+        # calendar, which costs a render nothing and means a calendar that
+        # arrived without them -- built by an older tool, say -- is put right
+        # by the next render rather than the next refetch.
+        write_months(payload["days"])
         date = render_site(payload, args.timezone, as_of)
         print(f"Rendered index.html for {date} ({args.timezone})")
         return 0
@@ -2414,6 +2468,7 @@ def main() -> int:
     }
     with open(OUT, "w", encoding="utf-8") as fh:
         json.dump(payload, fh, ensure_ascii=False, separators=(",", ":"))
+    months, stale_months = write_months(days)
 
     covered = sorted(d for d, entry in days.items() if "cfm" in entry)
     print(f"\nWrote {OUT.relative_to(ROOT)}")
@@ -2424,6 +2479,8 @@ def main() -> int:
           + (f" ({covered[0]} .. {covered[-1]})" if covered else ""))
     print(f"  manuals: {', '.join(m for m, _ in manuals) or 'none'}")
     print(f"  {OUT.stat().st_size / 1024:.0f} KB")
+    print(f"  {months} month files in {MONTH_DIR.relative_to(ROOT).as_posix()}/"
+          + (f", {stale_months} stale ones removed" if stale_months else ""))
 
     photos = sorted(SPEAKERS.glob("*.jpg")) if SPEAKERS.exists() else []
     print(f"  {len(photos)} speaker photos "

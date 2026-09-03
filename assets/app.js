@@ -42,12 +42,32 @@
     }
   }
 
+  /* The browser paints its own chrome -- the address bar on a phone -- the
+     colour the theme-color metas in <head> name, one per scheme, and chooses
+     between them by the system setting alone. So an override has to be told
+     to it as well, or a reader who chose dark on a light system gets a dark
+     page under a cream address bar. The colour is read off the stylesheet
+     once the attribute is set, so it is never written down a fourth time. */
+  var CHROME = Array.prototype.map.call(
+    document.querySelectorAll('meta[name="theme-color"]'),
+    function (meta) { return { meta: meta, own: meta.getAttribute("content") }; }
+  );
+
+  function paintChrome(mode) {
+    var paper = mode === "auto" ? "" :
+      getComputedStyle(document.documentElement).getPropertyValue("--paper").trim();
+    CHROME.forEach(function (entry) {
+      entry.meta.setAttribute("content", paper || entry.own);
+    });
+  }
+
   function applyMode(mode, button) {
     var root = document.documentElement;
     // Auto is the absence of a choice, so it clears both the attribute the
     // stylesheet reads and the stored value the next page load reads.
     if (mode === "auto") root.removeAttribute("data-theme");
     else root.setAttribute("data-theme", mode);
+    paintChrome(mode);
 
     try {
       if (mode === "auto") localStorage.removeItem("theme");
@@ -300,13 +320,30 @@
     }
   }
 
-  fetch("data/daily.json", { cache: "no-cache" })
-    .then(function (response) {
+  function load(url) {
+    return fetch(url, { cache: "no-cache" }).then(function (response) {
       if (!response.ok) throw new Error("HTTP " + response.status);
       return response.json();
-    })
-    .then(function (data) {
-      var entry = entryFor(data, today);
+    });
+  }
+
+  /* The calendar is published twice: whole, and sliced by month under
+     data/months/. One day is all that is wanted here, and it is nearly always
+     in this month, so the month is asked for first -- a tenth of the size --
+     and the whole calendar only when the month cannot answer: a day past the
+     end of what was built, which the cycling above handles, or a month file
+     that never arrived. */
+  function fromCalendar() {
+    return load("data/daily.json").then(function (data) {
+      return entryFor(data, today);
+    });
+  }
+
+  load("data/months/" + today.slice(0, 7) + ".json")
+    .then(function (month) {
+      return (month.days && month.days[today]) || fromCalendar();
+    }, fromCalendar)
+    .then(function (entry) {
       if (!entry) return;
       render(entry);
       renderDate(today);

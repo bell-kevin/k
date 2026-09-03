@@ -47,21 +47,26 @@ on:
         type: boolean
         default: false
 
-permissions:
-  contents: write
-  pages: write
-  id-token: write
-
-# Let the newest push win outright. Queueing instead (cancel-in-progress:
-# false) means a burst of quick pushes cancels the runs waiting behind it, and
-# the site can be left serving whichever artifact happened to deploy first.
+# Let the newest push win outright, and let everything else queue. A push is
+# the only event whose earlier run is worthless once a later one exists; a
+# scheduled render or a dispatch is the same render whenever it lands. And
+# cancelling those cost the site its refetch: the 08:10 render fires hours
+# late, the Monday and Thursday refetch starts at 09:00, and a render arriving
+# while the refetch was mid-way killed it -- the run that extends the calendar
+# and picks up a new conference, cancelled by the run that writes one date.
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Each job gets the permissions it uses and no more. This one commits the
+    # day's files back, so it writes contents; the deploy job holds the OIDC
+    # token Pages is deployed with, and this one never sees it.
+    permissions:
+      contents: write
+      pages: read
     steps:
       - uses: actions/checkout@v7
 
@@ -90,10 +95,38 @@ jobs:
       - name: Check where the links land
         run: python tools/test_links.py
 
-      # A full refetch is ~1,100 requests -- the runner starts with no response
-      # cache, so every one of them goes out -- and it runs only on the
-      # twice-weekly cron or when asked for. Every other run just re-renders
-      # today's page from the calendar already in the repository.
+      # The arithmetic that turns a date into a day's readings -- which week a
+      # title names, which chapters it assigns, which verse the index lands on.
+      # Pure functions with no verses to commit, so these are cases in code.
+      - name: Check the calendar arithmetic
+        run: python tools/test_calendar.py
+
+      # A full refetch is ~1,100 requests, and about 930 of them are chapters
+      # of scripture, which do not change. So the response cache is carried
+      # over from the last refetch rather than started cold, and only the
+      # answers that can go stale are thrown away before the build: the
+      # conference and manual pages, which are how a new conference or a new
+      # year's manual is noticed at all. Bump the key if a chapter ever does
+      # need refetching. The key never matches exactly, on purpose: that is
+      # what makes the action save a fresh copy at the end of every run.
+      - name: Restore the scripture cache
+        if: github.event.schedule == '0 9 * * 1,4' || inputs.refetch
+        uses: actions/cache@v6
+        with:
+          path: .cache
+          key: study-api-v1-${{ github.run_id }}
+          restore-keys: study-api-v1-
+
+      - name: Forget the responses that can go stale
+        if: github.event.schedule == '0 9 * * 1,4' || inputs.refetch
+        run: |
+          mkdir -p .cache
+          find .cache -name '*.json.gz' ! -name 'scriptures_*' -delete
+          echo "$(find .cache -name '*.json.gz' | wc -l) chapters kept"
+
+      # The refetch runs only on the twice-weekly cron or when asked for.
+      # Every other run just re-renders today's page from the calendar already
+      # in the repository.
       - name: Refetch readings calendar
         if: github.event.schedule == '0 9 * * 1,4' || inputs.refetch
         run: python tools/build_daily.py --days 730
@@ -118,13 +151,13 @@ jobs:
           # Speaker photos arrive and are pruned with the calendar, so they are
           # committed alongside it; --porcelain also sees ones git has not
           # tracked yet, which a plain diff would miss.
-          if [ -z "$(git status --porcelain -- data/daily.json index.html assets/speakers)" ]; then
+          if [ -z "$(git status --porcelain -- data index.html assets/speakers)" ]; then
             echo "Nothing changed."
             exit 0
           fi
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A data/daily.json index.html assets/speakers
+          git add -A data index.html assets/speakers
           git commit -m "Readings for $(date -u +%Y-%m-%d)"
           git pull --rebase --autostash
           git push
@@ -145,6 +178,9 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
