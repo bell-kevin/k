@@ -56,6 +56,7 @@ should not have to sign in to get it either.
 | `tools/test_links.py` | Checks that a link opens its verse where a reader can see it. |
 | `tools/template.html` | The page itself, with placeholders where the day's readings go. |
 | `data/daily.json` | The prebuilt calendar — two years of daily picks, about 1 MB. |
+| `data/months/` | The same calendar, one file per month, so the script can fetch a tenth of it. |
 | `assets/app.js` | The enhancement script: theme, share, and correcting the day. |
 | `assets/style.css` | The styling. |
 | `assets/speakers/` | Speaker photos, downloaded at build time and committed. |
@@ -808,7 +809,9 @@ The script is enhancement only. Apart from the theme button and swapping the
 share block for a share sheet, it does nothing at all unless the reader's own
 date has moved past the date the page was built for — someone ahead of the build
 timezone, or looking at a copy served from cache. In that one case it swaps in
-the right day from `data/daily.json`. If that fetch fails, the baked-in readings
+the right day from the calendar: the month's slice of it under `data/months/`,
+about 40 KB, or the whole of `data/daily.json` only when the month cannot
+answer — a day past the end of what was built. If that fetch fails, the baked-in readings
 stay put, the date shown next to them is the date they belong to, and a short
 notice says which day the page is showing — so the page never claims a reading
 is today's when it isn't.
@@ -827,9 +830,9 @@ Scheduled runs of `.github/workflows/deploy.yml` keep it current:
 - **Mondays and Thursdays**, at 09:00 UTC — a full refetch, to extend the
   calendar and pick up a newly published conference or manual.
 
-Anything either run changes — `data/daily.json`, `index.html`, and the speaker
-photos — is committed back to the repository, and then only the served files are
-published to Pages.
+Anything either run changes — the calendar under `data/`, `index.html`, and the
+speaker photos — is committed back to the repository, and then only the served
+files are published to Pages.
 
 Because the daily job is what moves a no-JavaScript page on to the next day, the
 site depends on it running. The calendar is built two years ahead, so a missed

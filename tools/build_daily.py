@@ -36,6 +36,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 CACHE = ROOT / ".cache"
 OUT = ROOT / "data" / "daily.json"
+# The same calendar again, one file per month, for the script to fetch a
+# tenth of it instead of the whole two years -- see `write_months`.
+MONTH_DIR = ROOT / "data" / "months"
 SPEAKERS = ROOT / "assets" / "speakers"
 
 API = "https://www.churchofjesuschrist.org/study/api/v3/language-pages/type/content"
@@ -2301,6 +2304,38 @@ def render_site(payload: dict, timezone: str, date: dt.date | None = None) -> dt
     return date
 
 
+def write_months(days: dict[str, dict]) -> tuple[int, int]:
+    """The calendar again, sliced by month, beside the whole of it.
+
+    The script only ever needs one day -- the reader's today, when the page
+    was built for a different one -- and the whole calendar is two years and
+    the better part of a megabyte. That was every reader east of Denver in the
+    morning, and everyone at all on a morning GitHub rendered late, fetching
+    730 days to show one. A month is a tenth of that, and it is what the
+    script asks for first; the whole calendar is the fallback, for a day past
+    the end of what was built. See assets/app.js.
+
+    A month carries no timestamp, so its bytes change only when a pick in it
+    does -- a new conference, a new manual -- and a routine refetch commits
+    nothing here. Months the calendar has moved past are removed. A render-only
+    run writes them too, from the calendar it already has.
+    """
+    by_month: dict[str, dict[str, dict]] = {}
+    for iso, entry in days.items():
+        by_month.setdefault(iso[:7], {})[iso] = entry
+    MONTH_DIR.mkdir(parents=True, exist_ok=True)
+    for month, month_days in by_month.items():
+        with open(MONTH_DIR / f"{month}.json", "w", encoding="utf-8") as fh:
+            json.dump({"days": month_days}, fh, ensure_ascii=False,
+                      separators=(",", ":"))
+    removed = 0
+    for path in MONTH_DIR.glob("*.json"):
+        if path.stem not in by_month:
+            path.unlink()
+            removed += 1
+    return len(by_month), removed
+
+
 def spread(pool: list[dict], seed: int, key) -> list[dict]:
     """Shuffle a pool so consecutive days are not from the same place."""
     shuffled = pool[:]
@@ -2353,6 +2388,12 @@ def main() -> int:
             return 1
         with open(OUT, encoding="utf-8") as fh:
             payload = json.load(fh)
+        # The month slices are derived from the calendar, so they are written
+        # here as well as by a full build: the same bytes for the same
+        # calendar, which costs a render nothing and means a calendar that
+        # arrived without them -- built by an older tool, say -- is put right
+        # by the next render rather than the next refetch.
+        write_months(payload["days"])
         date = render_site(payload, args.timezone, as_of)
         print(f"Rendered index.html for {date} ({args.timezone})")
         return 0
@@ -2421,6 +2462,7 @@ def main() -> int:
     }
     with open(OUT, "w", encoding="utf-8") as fh:
         json.dump(payload, fh, ensure_ascii=False, separators=(",", ":"))
+    months, stale_months = write_months(days)
 
     covered = sorted(d for d, entry in days.items() if "cfm" in entry)
     print(f"\nWrote {OUT.relative_to(ROOT)}")
@@ -2431,6 +2473,8 @@ def main() -> int:
           + (f" ({covered[0]} .. {covered[-1]})" if covered else ""))
     print(f"  manuals: {', '.join(m for m, _ in manuals) or 'none'}")
     print(f"  {OUT.stat().st_size / 1024:.0f} KB")
+    print(f"  {months} month files in {MONTH_DIR.relative_to(ROOT).as_posix()}/"
+          + (f", {stale_months} stale ones removed" if stale_months else ""))
 
     photos = sorted(SPEAKERS.glob("*.jpg")) if SPEAKERS.exists() else []
     print(f"  {len(photos)} speaker photos "

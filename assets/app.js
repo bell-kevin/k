@@ -300,13 +300,30 @@
     }
   }
 
-  fetch("data/daily.json", { cache: "no-cache" })
-    .then(function (response) {
+  function load(url) {
+    return fetch(url, { cache: "no-cache" }).then(function (response) {
       if (!response.ok) throw new Error("HTTP " + response.status);
       return response.json();
-    })
-    .then(function (data) {
-      var entry = entryFor(data, today);
+    });
+  }
+
+  /* The calendar is published twice: whole, and sliced by month under
+     data/months/. One day is all that is wanted here, and it is nearly always
+     in this month, so the month is asked for first -- a tenth of the size --
+     and the whole calendar only when the month cannot answer: a day past the
+     end of what was built, which the cycling above handles, or a month file
+     that never arrived. */
+  function fromCalendar() {
+    return load("data/daily.json").then(function (data) {
+      return entryFor(data, today);
+    });
+  }
+
+  load("data/months/" + today.slice(0, 7) + ".json")
+    .then(function (month) {
+      return (month.days && month.days[today]) || fromCalendar();
+    }, fromCalendar)
+    .then(function (entry) {
       if (!entry) return;
       render(entry);
       renderDate(today);
