@@ -20,6 +20,7 @@ import argparse
 import datetime as dt
 import gzip
 import html
+import http.client
 import json
 import os
 import random
@@ -361,8 +362,14 @@ def fetch(uri: str, retries: int = 3) -> dict | None:
                 json.dump(data, fh)
             time.sleep(0.25)  # be a polite client
             return data
-        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError,
-                ValueError) as err:
+        except (OSError, http.client.HTTPException, ValueError) as err:
+            # OSError is the whole family: URLError and TimeoutError are both
+            # subclasses, and so are the ConnectionResetError and friends that
+            # the *read* half of a request raises rather than the open. Those,
+            # and http.client's IncompleteRead, are what an earlier, narrower
+            # clause let through -- and with the pool below, one of them took
+            # down a 1,100-request build rather than costing one retry.
+            #
             # 404 means no such page. 401/403 means the page exists but is not
             # public yet -- a manual is staged behind auth for months before it
             # is published. Neither answer improves on a retry.
@@ -1651,7 +1658,7 @@ def fetch_portrait(item: tuple[str, dict | None]) -> tuple[str, str]:
             if not resp.headers.get_content_type().startswith("image/"):
                 return uri, ""
             data = resp.read()
-    except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as err:
+    except (OSError, http.client.HTTPException) as err:
         print(f"  ! no photo for {uri}: {err}", file=sys.stderr)
         return uri, ""
 
