@@ -52,12 +52,16 @@ permissions:
   pages: write
   id-token: write
 
-# Let the newest push win outright. Queueing instead (cancel-in-progress:
-# false) means a burst of quick pushes cancels the runs waiting behind it, and
-# the site can be left serving whichever artifact happened to deploy first.
+# Let the newest push win outright, and let everything else queue. A push is
+# the only event whose earlier run is worthless once a later one exists; a
+# scheduled render or a dispatch is the same render whenever it lands. And
+# cancelling those cost the site its refetch: the 08:10 render fires hours
+# late, the Monday and Thursday refetch starts at 09:00, and a render arriving
+# while the refetch was mid-way killed it -- the run that extends the calendar
+# and picks up a new conference, cancelled by the run that writes one date.
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 jobs:
   build:
