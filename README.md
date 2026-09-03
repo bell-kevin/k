@@ -63,6 +63,7 @@ should not have to sign in to get it either.
 | `assets/style.css` | The styling. |
 | `assets/speakers/` | Speaker photos, downloaded at build time and committed. |
 | `.github/workflows/deploy.yml` | The scheduled builds and the Pages deployment. |
+| `.github/dependabot.yml` | Opens a pull request when one of the workflow's actions has a new major. |
 | `.cache/` | Memoised API responses. Not served, not committed; safe to delete. |
 
 The whole builder is one standard-library Python file, so CI installs nothing.

@@ -47,11 +47,6 @@ on:
         type: boolean
         default: false
 
-permissions:
-  contents: write
-  pages: write
-  id-token: write
-
 # Let the newest push win outright, and let everything else queue. A push is
 # the only event whose earlier run is worthless once a later one exists; a
 # scheduled render or a dispatch is the same render whenever it lands. And
@@ -66,6 +61,12 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Each job gets the permissions it uses and no more. This one commits the
+    # day's files back, so it writes contents; the deploy job holds the OIDC
+    # token Pages is deployed with, and this one never sees it.
+    permissions:
+      contents: write
+      pages: read
     steps:
       - uses: actions/checkout@v7
 
@@ -177,6 +178,9 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

@@ -1,0 +1,9 @@
+# Keep the workflow's actions on their current majors. The bump to checkout
+# v7 and friends was done by hand in PR #7; this opens that pull request
+# itself, once a month, so the next one is not waiting on somebody noticing.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
