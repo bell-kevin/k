@@ -2271,7 +2271,7 @@ def render_cards(entry: dict) -> str:
     <h2 class="card__label">General Conference <span>Quote of the Day</span></h2>
     <blockquote class="quote" id="quote-text">{esc(quote.get('text', ''))}</blockquote>
     <figure class="portrait" id="quote-portrait"{'' if photo else ' hidden'}>
-      <img id="quote-photo"{photo_src} alt="{photo_alt}" width="{PORTRAIT_WIDTH}" height="{PORTRAIT_WIDTH * 9 // 16}" decoding="async">
+      <img id="quote-photo"{photo_src} alt="{photo_alt}" width="{PORTRAIT_WIDTH}" height="{PORTRAIT_WIDTH * 9 // 16}" loading="lazy" decoding="async">
     </figure>
     <p class="ref">
       <span id="quote-speaker" class="speaker">{esc(quote.get('speaker', ''))}</span><a id="quote-link" href="{esc(quote.get('url', '#'))}" target="_blank" rel="noopener noreferrer"><cite id="quote-talk">{esc(quote.get('talk', ''))}</cite></a><span id="quote-session" class="session">{esc(quote.get('session', ''))}</span>
